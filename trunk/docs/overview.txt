@@ -1,0 +1,87 @@
+Database Overview.
+
+Records:
+
+User:
+	Username
+	Password hash
+	GUID
+	Character GUID list
+	Party GUID List
+	
+Character:
+	Name
+	User GUID
+	Party List
+	Stats
+	Defense
+	Level
+	Class
+	Max HP
+	Surges
+	Powers
+	Mini ID
+
+Character Instance:
+	Party GUID
+	Character GUID
+	Defense mods
+	Stat mods
+	Current HP
+	Current Surges
+	Current Action Points
+	Current Power List
+	Status Effect List
+	Encounter Power Statuses
+	Daily Power Statuses
+	Loot List
+	Current Mark Target
+	Current initiave
+	Note List
+
+NPC:
+	GUID
+	Name
+	Race
+	Type
+	HP
+	Stats
+	Power List
+
+NPC Instance
+	NPC GUID
+	Party ID
+	Current HP
+	Current Action Points
+	Mini ID
+	Power status List
+	Loot List
+	Current Mark Target
+	Iniative
+
+Encounter
+	GUID
+	Party ID
+	NPC Instatnce List
+
+Party:
+	GUID
+	Character Instance List
+	Encounter Count
+	Milestone Count
+	GP count
+	Current Encounter GUID
+	
+
+Tools:
+
+	Roll for initiative (RFI)
+		Has the ability to load a party and ether create encounters, or recall premade encounters.
+		Tracks the initatives and status of all involved for an encounter. Updates PC statuses on each turn.
+		Tracks NPC heath, can track PC heath, but should also be able to let PCs update that status
+		and get that update from the server.
+		
+	Character Status Tracker (CST)
+		Lets a player see his character instance for a specific party. Lets the player track power, HP,
+		and action point use, updating the server on each action. Also lets the player add loot and notes
+		to the character, or GP to the party.
