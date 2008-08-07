@@ -35,7 +35,7 @@ namespace tracker
                 EditMobLevel.Text = monster.level.ToString();
                 EditMobClass.Text = monster.className;
                 EditMobType.Text = monster.type;
-                EditMobSize.Text = monster.size;
+           //     EditMobSize.Text = monster.size;
                 int bloodied = monster.stats.health.maxHP / 2;
                 EditMobBloodied.Text = bloodied.ToString();
                 EditMobHP.Text = monster.stats.health.maxHP.ToString();
@@ -60,7 +60,7 @@ namespace tracker
             int.TryParse(EditMobLevel.Text, out monster.level);
             monster.className = EditMobClass.Text;
             monster.type = EditMobType.Text;
-            monster.size = EditMobSize.Text;
+      //      monster.size = EditMobSize.Text;
             int.TryParse(EditMobHP.Text, out monster.stats.health.maxHP);
             monster.special = EditMobSpecial.Text;
             monster.senses = EditMobSenses.Text;
@@ -72,6 +72,26 @@ namespace tracker
             int.TryParse(EditMobFort.Text, out monster.stats.defenses.fortitude);
             int.TryParse(EditMobAC.Text, out monster.stats.defenses.AC);
             monster.dirty = true;
+        }
+
+        private void EditMobSizeCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label16_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkedListBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
