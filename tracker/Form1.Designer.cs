@@ -67,6 +67,7 @@ namespace tracker
             this.MobEncounters = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.MobDatabase = new System.Windows.Forms.GroupBox();
+            this.MobEdit = new System.Windows.Forms.Button();
             this.MobDupe = new System.Windows.Forms.Button();
             this.MobDelete = new System.Windows.Forms.Button();
             this.MobNew = new System.Windows.Forms.Button();
@@ -86,7 +87,6 @@ namespace tracker
             this.EncountersList = new System.Windows.Forms.ListView();
             this.EncounterMobName = new System.Windows.Forms.ColumnHeader();
             this.EncounterCode = new System.Windows.Forms.ColumnHeader();
-            this.MobEdit = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.TrackerPage.SuspendLayout();
             this.PartyPage.SuspendLayout();
@@ -99,9 +99,9 @@ namespace tracker
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.TrackerPage);
+            this.tabControl1.Controls.Add(this.EncountersPage);
             this.tabControl1.Controls.Add(this.PartyPage);
             this.tabControl1.Controls.Add(this.MonstersPage);
-            this.tabControl1.Controls.Add(this.EncountersPage);
             this.tabControl1.Location = new System.Drawing.Point(-1, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -430,6 +430,16 @@ namespace tracker
             this.MobDatabase.TabStop = false;
             this.MobDatabase.Text = "Database";
             // 
+            // MobEdit
+            // 
+            this.MobEdit.Location = new System.Drawing.Point(88, 76);
+            this.MobEdit.Name = "MobEdit";
+            this.MobEdit.Size = new System.Drawing.Size(75, 23);
+            this.MobEdit.TabIndex = 5;
+            this.MobEdit.Text = "Edit";
+            this.MobEdit.UseVisualStyleBackColor = true;
+            this.MobEdit.Click += new System.EventHandler(this.MobEdit_Click);
+            // 
             // MobDupe
             // 
             this.MobDupe.Location = new System.Drawing.Point(7, 76);
@@ -438,6 +448,7 @@ namespace tracker
             this.MobDupe.TabIndex = 4;
             this.MobDupe.Text = "Copy";
             this.MobDupe.UseVisualStyleBackColor = true;
+            this.MobDupe.Click += new System.EventHandler(this.MobDupe_Click);
             // 
             // MobDelete
             // 
@@ -447,6 +458,7 @@ namespace tracker
             this.MobDelete.TabIndex = 3;
             this.MobDelete.Text = "Delete";
             this.MobDelete.UseVisualStyleBackColor = true;
+            this.MobDelete.Click += new System.EventHandler(this.MobDelete_Click);
             // 
             // MobNew
             // 
@@ -582,16 +594,6 @@ namespace tracker
             // 
             this.EncounterCode.Text = "Code";
             this.EncounterCode.Width = 50;
-            // 
-            // MobEdit
-            // 
-            this.MobEdit.Location = new System.Drawing.Point(89, 76);
-            this.MobEdit.Name = "MobEdit";
-            this.MobEdit.Size = new System.Drawing.Size(75, 23);
-            this.MobEdit.TabIndex = 5;
-            this.MobEdit.Text = "Edit";
-            this.MobEdit.UseVisualStyleBackColor = true;
-            this.MobEdit.Click += new System.EventHandler(this.MobEdit_Click);
             // 
             // Form1
             // 

@@ -33,7 +33,7 @@ namespace tracker
                 EditMobName.Text = monster.name;
                 EditMobXP.Text = monster.XP.ToString();
                 EditMobLevel.Text = monster.level.ToString();
-                EditMobClass.Text = monster.className;
+                EditMobRole.Text = monster.role;
                 EditMobType.Text = monster.type;
            //     EditMobSize.Text = monster.size;
                 int bloodied = monster.stats.health.maxHP / 2;
@@ -43,7 +43,7 @@ namespace tracker
                 EditMobSenses.Text = monster.senses;
                 EditMobInit.Text = monster.stats.inititive.ToString();
                 EditMobSpeed.Text = monster.speed;
-                EditMobResist.Text = monster.resist;
+              //  EditMobResist.Text = monster.resist;
                 EditMobWill.Text = monster.stats.defenses.will.ToString();
                 EditMobRef.Text = monster.stats.defenses.reflex.ToString();
                 EditMobFort.Text = monster.stats.defenses.fortitude.ToString();
@@ -58,7 +58,7 @@ namespace tracker
             monster.name = EditMobName.Text;
             int.TryParse(EditMobXP.Text, out monster.XP);
             int.TryParse(EditMobLevel.Text, out monster.level);
-            monster.className = EditMobClass.Text;
+            monster.role = EditMobRole.Text;
             monster.type = EditMobType.Text;
       //      monster.size = EditMobSize.Text;
             int.TryParse(EditMobHP.Text, out monster.stats.health.maxHP);
@@ -66,7 +66,7 @@ namespace tracker
             monster.senses = EditMobSenses.Text;
             int.TryParse(EditMobInit.Text, out monster.stats.inititive);
             monster.speed = EditMobSpeed.Text;
-            monster.resist = EditMobResist.Text;
+          //  monster.resist = EditMobResist.Text;
             int.TryParse(EditMobWill.Text, out monster.stats.defenses.will);
             int.TryParse(EditMobRef.Text, out monster.stats.defenses.reflex);
             int.TryParse(EditMobFort.Text, out monster.stats.defenses.fortitude);

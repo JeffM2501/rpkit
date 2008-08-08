@@ -69,7 +69,7 @@ namespace tracker
 
         private void MobNew_Click(object sender, EventArgs e)
         {
-            EditMobDialog editDlog = new EditMobDialog(new Monster());
+            EditMobDialog editDlog = new EditMobDialog(new Monster(tr.newGUID()));
 
             DialogResult result = editDlog.ShowDialog(this);
             if(result == DialogResult.OK)
@@ -89,6 +89,32 @@ namespace tracker
                 DialogResult result = editDlog.ShowDialog(this);
                 if (result == DialogResult.OK)
                     tr.monstersChanged();
+            }
+        }
+
+        private void MobDupe_Click(object sender, EventArgs e)
+        {
+            int selMob = currentMonster();
+            if (selMob >= 0)
+            {
+                Monster newMob = tr.getMonster(selMob).Clone();
+
+                newMob.GUID = tr.newGUID();
+
+                EditMobDialog editDlog = new EditMobDialog(newMob);
+
+                DialogResult result = editDlog.ShowDialog(this);
+                if (result == DialogResult.OK)
+                    tr.addMonster(editDlog.monster);
+            }
+        }
+
+        private void MobDelete_Click(object sender, EventArgs e)
+        {
+            int selMob = currentMonster();
+            if (selMob >= 0)
+            {
+                tr.deleteMonster(selMob);
             }
         }
     }
