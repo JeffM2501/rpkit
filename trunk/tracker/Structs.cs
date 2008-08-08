@@ -20,6 +20,14 @@ namespace tracker
             reflex = int.Parse(stream.ReadLine());
             will = int.Parse(stream.ReadLine());
         }
+
+        public void write(StreamWriter stream)
+        {
+            stream.WriteLine(AC.ToString());
+            stream.WriteLine(fortitude.ToString());
+            stream.WriteLine(reflex.ToString());
+            stream.WriteLine(will.ToString());
+        }
     }
 
     public struct Health
@@ -42,12 +50,34 @@ namespace tracker
                 tempHP = 0;
             }
         }
+
+        public void write(StreamWriter stream, bool player)
+        {
+            stream.WriteLine(maxHP.ToString());
+            if (player)
+            {
+                stream.WriteLine(currentHP.ToString());
+                stream.WriteLine(tempHP.ToString());
+            }
+        }
     }
 
     public struct Surges
     {
         public int perDay;
         public int current;
+
+        public void read(StreamReader stream)
+        {
+            perDay = int.Parse(stream.ReadLine());
+            current = int.Parse(stream.ReadLine());
+        }
+
+        public void write(StreamWriter stream)
+        {
+            stream.WriteLine(perDay.ToString());
+            stream.WriteLine(current.ToString());
+        }
     }
 
     public struct CommonStats
@@ -68,6 +98,7 @@ namespace tracker
             health.read(stream, player);
             if (player)
             {
+                statuses = new List<string>();
                 foreach (string i in stream.ReadLine().Split(new char[] { ' ' }))
                     statuses.Add(i);
 
@@ -78,41 +109,142 @@ namespace tracker
             {
                 markTarget = "";
                 markedBy = "";
-                statuses.Clear();
+                statuses = new List<string>();
+            }
+        }
+
+        public void write(StreamWriter stream, bool player)
+        {
+            stream.WriteLine(inititive.ToString());
+            stream.WriteLine(actionPoints.ToString());
+            defenses.write(stream);
+            health.write(stream, player);
+            if (player)
+            {
+                foreach (string i in statuses)
+                    stream.Write(i+" ");
+
+                stream.WriteLine(markTarget);
+                stream.WriteLine(markedBy);
             }
         }
     }
 
     public class Player
     {
-        public string player = string.Empty;
-        public string character = string.Empty;
+        public Player ( int id)
+        {
+            GUID = id;
+            dirty = false;
+        }
+        
+        public string getFileName ( )
+        {
+            return playerName + "_" + characterName + GUID.ToString() + ".txt";
+        }
+
+        public string playerName = string.Empty;
+        public string characterName = string.Empty;
         public CommonStats stats;
         public Surges surges;
+        public int GUID;
+
+        bool dirty;
+
+        public void read(StreamReader stream)
+        {
+            playerName = stream.ReadLine();
+            characterName = stream.ReadLine();
+            GUID = int.Parse(stream.ReadLine());
+            stats.read(stream, true);
+            surges.read(stream);
+        }
+
+        public void write(StreamWriter stream)
+        {
+            stream.WriteLine(playerName);
+            stream.WriteLine(characterName);
+            stream.WriteLine(GUID.ToString());
+            stats.write(stream, true);
+            surges.write(stream);
+        }
     }
 
-    public class Monster
+    public class Monster : ICloneable
     {
-        public Monster()
+
+        public Monster( int id )
         {
             dirty = false;
             XP = 0;
-            GUID = 0;
+            GUID = id;
             level = 0;
         }
         public string name = string.Empty;
         public CommonStats stats;
         public int GUID;
+
         public int XP;
         public int level;
         public string size = string.Empty;
         public string type = string.Empty;
-        public string className = string.Empty;
+        public string role = string.Empty;
         public string speed = string.Empty;
         public string senses = string.Empty;
         public string special = string.Empty;
-        public string resist = string.Empty;
         public bool dirty;
+
+        public string getFileName ( )
+        {
+            return name + GUID.ToString() +".txt";
+        }
+
+        public void read ( StreamReader stream )
+        {
+            name = stream.ReadLine();
+            GUID = int.Parse(stream.ReadLine());
+            stats.read(stream, false);
+
+            XP = int.Parse(stream.ReadLine());
+            level = int.Parse(stream.ReadLine());
+
+            if (!stream.EndOfStream)
+            {
+                size = stream.ReadLine();
+                type = stream.ReadLine();
+                role = stream.ReadLine();
+                speed = stream.ReadLine();
+                senses = stream.ReadLine();
+                special = stream.ReadLine();
+            }
+        }
+
+        public void write(StreamWriter stream)
+        {
+            stream.WriteLine(name);
+            stream.WriteLine(GUID.ToString());
+            stats.write(stream, false);
+
+            stream.WriteLine(XP.ToString());
+            stream.WriteLine(level.ToString());
+
+            //write out the extra info later
+        }
+
+        #region ICloneable Members
+
+        object ICloneable.Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        #endregion
+
+        public Monster Clone()
+        {
+            return (Monster)MemberwiseClone();
+        }
+
     }
 
     public class MonsterInstance
@@ -120,7 +252,30 @@ namespace tracker
         public string name = string.Empty;
         public CommonStats stats;
         public string code = string.Empty;
-        public int parent; // the monster that this came from
+        public int GUID;
+        public Monster parent;
+
+        public void read(StreamReader stream)
+        {
+            GUID = 0;
+            parent = null;
+
+            name = stream.ReadLine();
+            GUID = int.TryParse(stream.ReadLine());
+            stats.read(stream, false);
+        }
+
+        public void write(StreamWriter stream)
+        {
+            stream.WriteLine(name);
+            stream.WriteLine(GUID.ToString());
+            stats.write(stream, false);
+
+            stream.WriteLine(XP.ToString());
+            stream.WriteLine(level.ToString());
+
+            //write out the extra info later
+        }
     }
 
     public class Party
@@ -138,5 +293,32 @@ namespace tracker
     {
         public List<MonsterInstance> monsters = new List<MonsterInstance>();
         public string name = string.Empty;
+
+        public void read(StreamReader stream)
+        {
+            monsters.Clear();
+            name = stream.ReadLine();
+            int count =0;
+            int.TryParse(stream.ReadLine(), count);
+
+            for (int i = 0; i < count; i++)
+            {
+                MonsterInstance inst = new MonsterInstance();
+                inst.read(stream);
+                monsters.Add(inst);
+            }
+        }
+
+        public void write(StreamWriter stream)
+        {
+            stream.WriteLine(name);
+            stream.WriteLine(GUID.ToString());
+            stats.write(stream, false);
+
+            stream.WriteLine(XP.ToString());
+            stream.WriteLine(level.ToString());
+
+            //write out the extra info later
+        }
     }
 }

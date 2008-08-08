@@ -11,33 +11,53 @@ namespace tracker
 {
     public class TrackerLogic
     {
-        List<Party> parties;
-        List<Encounter> encounters;
-        MonsterDB monsterDB;
+        List<Party> parties = new List<Party>();
+        List<Encounter> encounters = new List<Encounter>();
+        MonsterDB monsterDB = new MonsterDB();
+
+        Random rand = new Random();
 
         Form1 ui;
+
+        public int newGUID ( )
+        {
+            return rand.Next();
+        }
 
         public TrackerLogic(Form1 form)
         {
             ui = form;
-            monsterDB = new MonsterDB();
-            encounters = new List<Encounter>();
-            parties = new List<Party>();
 
             loadDatabases();
+
+            fillUI();
 
             ui.addTrackerItem("item1", 0);
             ui.addTrackerItem("item2", 1);
         }
 
-        public Monster newMonster ( )
+        public void fillUI ()
         {
-            return new Monster();
+            fillMonsterList();
+        }
+
+        public void fillMonsterList ()
+        {
+            ui.clearMonsters();
+            foreach (Monster m in monsterDB.items)
+                ui.addMonster(m);
         }
 
         public Monster getMonster ( int index )
         {
             return monsterDB.items[index];
+        }
+
+        public void deleteMonster (int index)
+        {
+            clearMonsterFile(getMonster(index));
+            monsterDB.items.Remove(getMonster(index));
+            fillMonsterList();
         }
 
         public void addMonster ( Monster m )
@@ -48,20 +68,51 @@ namespace tracker
 
         public void monstersChanged ( )
         {
-            ui.clearMonsters();
-            foreach (Monster m in monsterDB.items)
-                ui.addMonster(m);
-     
+            fillMonsterList();   
             flushDirtyMonsters();
+        }
+
+        private void clearMonsterFile ( Monster mob )
+        {
+            string rootDir = "./";
+            string mobDir = "mobs";
+            DirectoryInfo dir = new DirectoryInfo(rootDir + mobDir);
+
+            if (!dir.Exists)
+                return;
+
+            FileInfo f = new FileInfo(rootDir + mobDir + "/" + mob.name + ".txt");
+            if (f.Exists)
+                f.Delete();
         }
 
         private void flushDirtyMonsters ( )
         {
-            foreach (Monster m in monsterDB.items )
+            string rootDir = "./";
+            string mobDir = "mobs";
+            DirectoryInfo dir = new DirectoryInfo(rootDir + mobDir);
+
+            if (!dir.Exists)
+                dir.Create();
+
+            foreach (Monster m in monsterDB.items)
             {
-                if (m.dirty)
+                if (m.dirty && m.name.Length > 0)
                 {
                     // open the file and write it.
+
+                    FileInfo f = new FileInfo(rootDir + mobDir + "/" + m.getFileName());
+                  //  if (!f.Exists)
+                 //       f.Create();
+
+                    FileStream fs = f.OpenWrite();
+                    StreamWriter file = new StreamWriter(fs);
+
+                    m.write(file);
+
+                    file.Close();
+                    fs.Close();
+
                     m.dirty = false;
                 }
             }
@@ -76,17 +127,12 @@ namespace tracker
             {
                 foreach (FileInfo f in dir.GetFiles("*.txt"))
                 {
-                    string name = f.Name;
                     FileStream fs = f.OpenRead();
                     StreamReader file = new StreamReader(fs);
 
-                    Monster mob = new Monster();
+                    Monster mob = new Monster(0);
 
-                    mob.name = file.ReadLine();
-                    mob.GUID = int.Parse(file.ReadLine());
-                    //       mob.guid = file.ReadLine();
-                    mob.stats.read(file, false);
-
+                    mob.read(file);
                     monsterDB.items.Add(mob);
 
                     file.Close();
@@ -100,12 +146,46 @@ namespace tracker
             {
                 foreach (DirectoryInfo d in dir.GetDirectories())
                 {
+                    Party party = new Party();
+                    party.name = d.Name;
+
                     foreach (FileInfo f in d.GetFiles("*.txt"))
                     {
+                        FileStream fs = f.OpenRead();
+                        StreamReader file = new StreamReader(fs);
 
+                        Player p = new Player(0);
+
+                        p.read(file);
+                        party.players.Add(p);
+
+                        file.Close();
+                        fs.Close();
                     }
                 }
             }
+
+            // load the encounters
+            DirectoryInfo dir = new DirectoryInfo(rootDir + "encounters");
+            if (dir.Exists)
+            {
+                foreach (FileInfo f in dir.GetFiles("*.txt"))
+                {
+                    FileStream fs = f.OpenRead();
+                    StreamReader file = new StreamReader(fs);
+
+                    Encounter enc = new Encounter();
+
+                    Monster mob = new Monster(0);
+
+                    mob.read(file);
+                    monsterDB.items.Add(mob);
+
+                    file.Close();
+                    fs.Close();
+                }
+            }
+
         }
     }
 }

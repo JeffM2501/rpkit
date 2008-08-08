@@ -32,12 +32,23 @@ namespace tracker
             this.EditMobCancel = new System.Windows.Forms.Button();
             this.EditMobName = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.EditMobSubType = new System.Windows.Forms.TextBox();
+            this.EditMobType = new System.Windows.Forms.ComboBox();
+            this.EditMobOrigin = new System.Windows.Forms.ComboBox();
+            this.EditMobSizeCategory = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.EditMobXP = new System.Windows.Forms.TextBox();
             this.EditMobLevel = new System.Windows.Forms.TextBox();
-            this.EditMobClass = new System.Windows.Forms.TextBox();
+            this.EditMobRole = new System.Windows.Forms.TextBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.checkedListBox2 = new System.Windows.Forms.CheckedListBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
             this.EditMobSpeed = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
@@ -59,17 +70,6 @@ namespace tracker
             this.label4 = new System.Windows.Forms.Label();
             this.EditMobInit = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.EditMobSizeCategory = new System.Windows.Forms.ComboBox();
-            this.EditMobOrigin = new System.Windows.Forms.ComboBox();
-            this.EditMobType = new System.Windows.Forms.ComboBox();
-            this.EditMobSubType = new System.Windows.Forms.TextBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
-            this.checkedListBox2 = new System.Windows.Forms.CheckedListBox();
-            this.label16 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -123,13 +123,84 @@ namespace tracker
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.EditMobXP);
             this.panel1.Controls.Add(this.EditMobLevel);
-            this.panel1.Controls.Add(this.EditMobClass);
+            this.panel1.Controls.Add(this.EditMobRole);
             this.panel1.Controls.Add(this.EditMobName);
             this.panel1.ForeColor = System.Drawing.Color.DarkGreen;
             this.panel1.Location = new System.Drawing.Point(1, 0);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(544, 62);
             this.panel1.TabIndex = 3;
+            // 
+            // EditMobSubType
+            // 
+            this.EditMobSubType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EditMobSubType.BackColor = System.Drawing.Color.DarkGreen;
+            this.EditMobSubType.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.EditMobSubType.ForeColor = System.Drawing.Color.White;
+            this.EditMobSubType.Location = new System.Drawing.Point(331, 32);
+            this.EditMobSubType.Name = "EditMobSubType";
+            this.EditMobSubType.Size = new System.Drawing.Size(131, 20);
+            this.EditMobSubType.TabIndex = 13;
+            this.EditMobSubType.Text = "SubType";
+            // 
+            // EditMobType
+            // 
+            this.EditMobType.BackColor = System.Drawing.Color.DarkGreen;
+            this.EditMobType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.EditMobType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.EditMobType.ForeColor = System.Drawing.Color.White;
+            this.EditMobType.FormattingEnabled = true;
+            this.EditMobType.Items.AddRange(new object[] {
+            "Animate",
+            "Beast",
+            "Humanoid",
+            "Magical Beast"});
+            this.EditMobType.Location = new System.Drawing.Point(205, 31);
+            this.EditMobType.Name = "EditMobType";
+            this.EditMobType.Size = new System.Drawing.Size(120, 21);
+            this.EditMobType.TabIndex = 12;
+            // 
+            // EditMobOrigin
+            // 
+            this.EditMobOrigin.BackColor = System.Drawing.Color.DarkGreen;
+            this.EditMobOrigin.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.EditMobOrigin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.EditMobOrigin.ForeColor = System.Drawing.Color.White;
+            this.EditMobOrigin.FormattingEnabled = true;
+            this.EditMobOrigin.Items.AddRange(new object[] {
+            "Aberrant",
+            "Elemental",
+            "Fey",
+            "Immortal",
+            "Natural",
+            "Shadow"});
+            this.EditMobOrigin.Location = new System.Drawing.Point(79, 31);
+            this.EditMobOrigin.Name = "EditMobOrigin";
+            this.EditMobOrigin.Size = new System.Drawing.Size(120, 21);
+            this.EditMobOrigin.TabIndex = 11;
+            // 
+            // EditMobSizeCategory
+            // 
+            this.EditMobSizeCategory.BackColor = System.Drawing.Color.DarkGreen;
+            this.EditMobSizeCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.EditMobSizeCategory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.EditMobSizeCategory.ForeColor = System.Drawing.Color.White;
+            this.EditMobSizeCategory.FormattingEnabled = true;
+            this.EditMobSizeCategory.Items.AddRange(new object[] {
+            "Fine",
+            "Diminutive",
+            "Tiny",
+            "Small",
+            "Medium",
+            "Large",
+            "Huge",
+            "Gargantuan",
+            "Colossal"});
+            this.EditMobSizeCategory.Location = new System.Drawing.Point(1, 31);
+            this.EditMobSizeCategory.Name = "EditMobSizeCategory";
+            this.EditMobSizeCategory.Size = new System.Drawing.Size(73, 21);
+            this.EditMobSizeCategory.TabIndex = 10;
+            this.EditMobSizeCategory.SelectedIndexChanged += new System.EventHandler(this.EditMobSizeCategory_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -178,17 +249,17 @@ namespace tracker
             this.EditMobLevel.TabIndex = 6;
             this.EditMobLevel.Text = "1";
             // 
-            // EditMobClass
+            // EditMobRole
             // 
-            this.EditMobClass.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EditMobClass.BackColor = System.Drawing.Color.DarkGreen;
-            this.EditMobClass.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.EditMobClass.ForeColor = System.Drawing.Color.White;
-            this.EditMobClass.Location = new System.Drawing.Point(443, 4);
-            this.EditMobClass.Name = "EditMobClass";
-            this.EditMobClass.Size = new System.Drawing.Size(100, 20);
-            this.EditMobClass.TabIndex = 5;
-            this.EditMobClass.Text = "Class";
+            this.EditMobRole.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EditMobRole.BackColor = System.Drawing.Color.DarkGreen;
+            this.EditMobRole.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.EditMobRole.ForeColor = System.Drawing.Color.White;
+            this.EditMobRole.Location = new System.Drawing.Point(443, 4);
+            this.EditMobRole.Name = "EditMobRole";
+            this.EditMobRole.Size = new System.Drawing.Size(100, 20);
+            this.EditMobRole.TabIndex = 5;
+            this.EditMobRole.Text = "Class";
             // 
             // panel2
             // 
@@ -228,6 +299,105 @@ namespace tracker
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(544, 143);
             this.panel2.TabIndex = 4;
+            // 
+            // checkedListBox2
+            // 
+            this.checkedListBox2.BackColor = System.Drawing.Color.PaleGoldenrod;
+            this.checkedListBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.checkedListBox2.FormattingEnabled = true;
+            this.checkedListBox2.Items.AddRange(new object[] {
+            "Fire",
+            "Ice",
+            "Radiant",
+            "Necrotic",
+            "Psycic",
+            "Acid",
+            "Sonic"});
+            this.checkedListBox2.Location = new System.Drawing.Point(426, 73);
+            this.checkedListBox2.Name = "checkedListBox2";
+            this.checkedListBox2.Size = new System.Drawing.Size(99, 45);
+            this.checkedListBox2.TabIndex = 37;
+            this.checkedListBox2.ThreeDCheckBoxes = true;
+            this.checkedListBox2.SelectedIndexChanged += new System.EventHandler(this.checkedListBox2_SelectedIndexChanged);
+            // 
+            // label16
+            // 
+            this.label16.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label16.AutoSize = true;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label16.ForeColor = System.Drawing.Color.Black;
+            this.label16.Location = new System.Drawing.Point(425, 57);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(76, 13);
+            this.label16.TabIndex = 36;
+            this.label16.Text = "Vulnerability";
+            this.label16.Click += new System.EventHandler(this.label16_Click);
+            // 
+            // checkedListBox1
+            // 
+            this.checkedListBox1.BackColor = System.Drawing.Color.PaleGoldenrod;
+            this.checkedListBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.checkedListBox1.FormattingEnabled = true;
+            this.checkedListBox1.Items.AddRange(new object[] {
+            "Fire",
+            "Ice",
+            "Radiant",
+            "Necrotic",
+            "Psycic",
+            "Acid",
+            "Sonic"});
+            this.checkedListBox1.Location = new System.Drawing.Point(312, 73);
+            this.checkedListBox1.Name = "checkedListBox1";
+            this.checkedListBox1.Size = new System.Drawing.Size(99, 45);
+            this.checkedListBox1.TabIndex = 35;
+            this.checkedListBox1.ThreeDCheckBoxes = true;
+            // 
+            // textBox2
+            // 
+            this.textBox2.BackColor = System.Drawing.Color.PaleGoldenrod;
+            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox2.ForeColor = System.Drawing.Color.Black;
+            this.textBox2.Location = new System.Drawing.Point(234, 110);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(50, 20);
+            this.textBox2.TabIndex = 34;
+            // 
+            // label15
+            // 
+            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.ForeColor = System.Drawing.Color.Black;
+            this.label15.Location = new System.Drawing.Point(191, 112);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(37, 13);
+            this.label15.TabIndex = 33;
+            this.label15.Text = "Climb";
+            // 
+            // textBox1
+            // 
+            this.textBox1.BackColor = System.Drawing.Color.PaleGoldenrod;
+            this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox1.ForeColor = System.Drawing.Color.Black;
+            this.textBox1.Location = new System.Drawing.Point(135, 110);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(50, 20);
+            this.textBox1.TabIndex = 32;
+            // 
+            // label14
+            // 
+            this.label14.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.ForeColor = System.Drawing.Color.Black;
+            this.label14.Location = new System.Drawing.Point(106, 112);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(23, 13);
+            this.label14.TabIndex = 31;
+            this.label14.Text = "Fly";
             // 
             // EditMobSpeed
             // 
@@ -481,176 +651,6 @@ namespace tracker
             this.label3.TabIndex = 10;
             this.label3.Text = "Initiative";
             // 
-            // EditMobSizeCategory
-            // 
-            this.EditMobSizeCategory.BackColor = System.Drawing.Color.DarkGreen;
-            this.EditMobSizeCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.EditMobSizeCategory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.EditMobSizeCategory.ForeColor = System.Drawing.Color.White;
-            this.EditMobSizeCategory.FormattingEnabled = true;
-            this.EditMobSizeCategory.Items.AddRange(new object[] {
-            "Fine",
-            "Diminutive",
-            "Tiny",
-            "Small",
-            "Medium",
-            "Large",
-            "Huge",
-            "Gargantuan",
-            "Colossal"});
-            this.EditMobSizeCategory.Location = new System.Drawing.Point(1, 31);
-            this.EditMobSizeCategory.Name = "EditMobSizeCategory";
-            this.EditMobSizeCategory.Size = new System.Drawing.Size(73, 21);
-            this.EditMobSizeCategory.TabIndex = 10;
-            this.EditMobSizeCategory.SelectedIndexChanged += new System.EventHandler(this.EditMobSizeCategory_SelectedIndexChanged);
-            // 
-            // EditMobOrigin
-            // 
-            this.EditMobOrigin.BackColor = System.Drawing.Color.DarkGreen;
-            this.EditMobOrigin.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.EditMobOrigin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.EditMobOrigin.ForeColor = System.Drawing.Color.White;
-            this.EditMobOrigin.FormattingEnabled = true;
-            this.EditMobOrigin.Items.AddRange(new object[] {
-            "Aberrant",
-            "Elemental",
-            "Fey",
-            "Immortal",
-            "Natural",
-            "Shadow"});
-            this.EditMobOrigin.Location = new System.Drawing.Point(79, 31);
-            this.EditMobOrigin.Name = "EditMobOrigin";
-            this.EditMobOrigin.Size = new System.Drawing.Size(120, 21);
-            this.EditMobOrigin.TabIndex = 11;
-            // 
-            // EditMobType
-            // 
-            this.EditMobType.BackColor = System.Drawing.Color.DarkGreen;
-            this.EditMobType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.EditMobType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.EditMobType.ForeColor = System.Drawing.Color.White;
-            this.EditMobType.FormattingEnabled = true;
-            this.EditMobType.Items.AddRange(new object[] {
-            "Animate",
-            "Beast",
-            "Humanoid",
-            "Magical Beast"});
-            this.EditMobType.Location = new System.Drawing.Point(205, 31);
-            this.EditMobType.Name = "EditMobType";
-            this.EditMobType.Size = new System.Drawing.Size(120, 21);
-            this.EditMobType.TabIndex = 12;
-            // 
-            // EditMobSubType
-            // 
-            this.EditMobSubType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EditMobSubType.BackColor = System.Drawing.Color.DarkGreen;
-            this.EditMobSubType.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.EditMobSubType.ForeColor = System.Drawing.Color.White;
-            this.EditMobSubType.Location = new System.Drawing.Point(331, 32);
-            this.EditMobSubType.Name = "EditMobSubType";
-            this.EditMobSubType.Size = new System.Drawing.Size(131, 20);
-            this.EditMobSubType.TabIndex = 13;
-            this.EditMobSubType.Text = "SubType";
-            // 
-            // textBox1
-            // 
-            this.textBox1.BackColor = System.Drawing.Color.PaleGoldenrod;
-            this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox1.ForeColor = System.Drawing.Color.Black;
-            this.textBox1.Location = new System.Drawing.Point(135, 110);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(50, 20);
-            this.textBox1.TabIndex = 32;
-            // 
-            // label14
-            // 
-            this.label14.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.ForeColor = System.Drawing.Color.Black;
-            this.label14.Location = new System.Drawing.Point(106, 112);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(23, 13);
-            this.label14.TabIndex = 31;
-            this.label14.Text = "Fly";
-            // 
-            // textBox2
-            // 
-            this.textBox2.BackColor = System.Drawing.Color.PaleGoldenrod;
-            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox2.ForeColor = System.Drawing.Color.Black;
-            this.textBox2.Location = new System.Drawing.Point(234, 110);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(50, 20);
-            this.textBox2.TabIndex = 34;
-            // 
-            // label15
-            // 
-            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.ForeColor = System.Drawing.Color.Black;
-            this.label15.Location = new System.Drawing.Point(191, 112);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(37, 13);
-            this.label15.TabIndex = 33;
-            this.label15.Text = "Climb";
-            // 
-            // checkedListBox1
-            // 
-            this.checkedListBox1.BackColor = System.Drawing.Color.PaleGoldenrod;
-            this.checkedListBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.checkedListBox1.FormattingEnabled = true;
-            this.checkedListBox1.Items.AddRange(new object[] {
-            "Fire",
-            "Ice",
-            "Radiant",
-            "Necrotic",
-            "Psycic",
-            "Acid",
-            "Sonic"});
-            this.checkedListBox1.Location = new System.Drawing.Point(312, 73);
-            this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(99, 45);
-            this.checkedListBox1.TabIndex = 35;
-            this.checkedListBox1.ThreeDCheckBoxes = true;
-            // 
-            // checkedListBox2
-            // 
-            this.checkedListBox2.BackColor = System.Drawing.Color.PaleGoldenrod;
-            this.checkedListBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.checkedListBox2.FormattingEnabled = true;
-            this.checkedListBox2.Items.AddRange(new object[] {
-            "Fire",
-            "Ice",
-            "Radiant",
-            "Necrotic",
-            "Psycic",
-            "Acid",
-            "Sonic"});
-            this.checkedListBox2.Location = new System.Drawing.Point(426, 73);
-            this.checkedListBox2.Name = "checkedListBox2";
-            this.checkedListBox2.Size = new System.Drawing.Size(99, 45);
-            this.checkedListBox2.TabIndex = 37;
-            this.checkedListBox2.ThreeDCheckBoxes = true;
-            this.checkedListBox2.SelectedIndexChanged += new System.EventHandler(this.checkedListBox2_SelectedIndexChanged);
-            // 
-            // label16
-            // 
-            this.label16.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.label16.AutoSize = true;
-            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.ForeColor = System.Drawing.Color.Black;
-            this.label16.Location = new System.Drawing.Point(425, 57);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(76, 13);
-            this.label16.TabIndex = 36;
-            this.label16.Text = "Vulnerability";
-            this.label16.Click += new System.EventHandler(this.label16_Click);
-            // 
             // EditMobDialog
             // 
             this.AcceptButton = this.EditMobOK;
@@ -688,7 +688,7 @@ namespace tracker
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox EditMobXP;
         private System.Windows.Forms.TextBox EditMobLevel;
-        private System.Windows.Forms.TextBox EditMobClass;
+        private System.Windows.Forms.TextBox EditMobRole;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox EditMobBloodied;
