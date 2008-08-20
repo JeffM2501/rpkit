@@ -39,6 +39,7 @@ namespace tracker
         public void fillUI ()
         {
             fillMonsterList();
+            fillEncounterList();
         }
 
         public void fillMonsterList ()
@@ -81,7 +82,7 @@ namespace tracker
             if (!dir.Exists)
                 return;
 
-            FileInfo f = new FileInfo(rootDir + mobDir + "/" + mob.name + ".txt");
+            FileInfo f = new FileInfo(rootDir + mobDir + "/" + mob.getFileName());
             if (f.Exists)
                 f.Delete();
         }
@@ -118,6 +119,86 @@ namespace tracker
             }
         }
 
+        // encounters
+        public void fillEncounterList ()
+        {
+            ui.clearEncounters();
+            foreach (Encounter e in encounters)
+                ui.addEncounter(e);
+        }
+
+        public void encountersChanged()
+        {
+            fillEncounterList();
+            flushDirtyEncounters();
+        }
+
+        public Encounter getEncounter(int index)
+        {
+            return encounters[index];
+        }
+
+        public void deleteEncounter(int index)
+        {
+            clearEncounterFile(getEncounter(index));
+            encounters.Remove(getEncounter(index));
+            fillEncounterList();
+        }
+
+        public void addEncounter(Encounter e)
+        {
+            encounters.Add(e);
+            encountersChanged();
+        }
+
+        private void clearEncounterFile(Encounter e)
+        {
+            string rootDir = "./";
+            string encountersDIr = "encounters";
+            DirectoryInfo dir = new DirectoryInfo(rootDir + encountersDIr);
+
+            if (!dir.Exists)
+                return;
+
+            FileInfo f = new FileInfo(rootDir + encountersDIr + "/" + e.getFileName());
+            if (f.Exists)
+                f.Delete();
+        }
+
+        private void flushDirtyEncounters()
+        {
+            string rootDir = "./";
+            string encounterDir = "encounters";
+            DirectoryInfo dir = new DirectoryInfo(rootDir + encounterDir);
+
+            if (!dir.Exists)
+                dir.Create();
+
+            foreach (Encounter e in encounters)
+            {
+                if (e.dirty && e.name.Length > 0)
+                {
+                    // open the file and write it.
+
+                    FileInfo f = new FileInfo(rootDir + encounterDir + "/" + e.getFileName());
+                    //  if (!f.Exists)
+                    //       f.Create();
+
+                    FileStream fs = f.OpenWrite();
+                    StreamWriter file = new StreamWriter(fs);
+
+                    e.write(file);
+
+                    file.Close();
+                    fs.Close();
+
+                    e.dirty = false;
+                }
+            }
+        }
+
+
+        // database
         private void loadDatabases()
         {
             // load the mob list
@@ -166,7 +247,7 @@ namespace tracker
             }
 
             // load the encounters
-            DirectoryInfo dir = new DirectoryInfo(rootDir + "encounters");
+            dir = new DirectoryInfo(rootDir + "encounters");
             if (dir.Exists)
             {
                 foreach (FileInfo f in dir.GetFiles("*.txt"))
@@ -176,10 +257,8 @@ namespace tracker
 
                     Encounter enc = new Encounter();
 
-                    Monster mob = new Monster(0);
-
-                    mob.read(file);
-                    monsterDB.items.Add(mob);
+                    enc.read(file);
+                    encounters.Add(enc);
 
                     file.Close();
                     fs.Close();
