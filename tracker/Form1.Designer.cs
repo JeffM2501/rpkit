@@ -217,7 +217,7 @@ namespace tracker
             this.EncountersPage.Controls.Add(this.EncountersList);
             this.EncountersPage.Location = new System.Drawing.Point(4, 22);
             this.EncountersPage.Name = "EncountersPage";
-            this.EncountersPage.Size = new System.Drawing.Size(393, 429);
+            this.EncountersPage.Size = new System.Drawing.Size(393, 426);
             this.EncountersPage.TabIndex = 3;
             this.EncountersPage.Text = "Encounters";
             this.EncountersPage.UseVisualStyleBackColor = true;
@@ -262,7 +262,7 @@ namespace tracker
             this.PartyPage.Location = new System.Drawing.Point(4, 22);
             this.PartyPage.Name = "PartyPage";
             this.PartyPage.Padding = new System.Windows.Forms.Padding(3);
-            this.PartyPage.Size = new System.Drawing.Size(393, 429);
+            this.PartyPage.Size = new System.Drawing.Size(393, 426);
             this.PartyPage.TabIndex = 1;
             this.PartyPage.Text = "Party";
             this.PartyPage.UseVisualStyleBackColor = true;
@@ -438,7 +438,7 @@ namespace tracker
             this.MonstersPage.Controls.Add(this.MobList);
             this.MonstersPage.Location = new System.Drawing.Point(4, 22);
             this.MonstersPage.Name = "MonstersPage";
-            this.MonstersPage.Size = new System.Drawing.Size(393, 429);
+            this.MonstersPage.Size = new System.Drawing.Size(393, 426);
             this.MonstersPage.TabIndex = 2;
             this.MonstersPage.Text = "Monsters";
             this.MonstersPage.UseVisualStyleBackColor = true;
