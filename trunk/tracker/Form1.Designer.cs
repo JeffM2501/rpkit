@@ -46,6 +46,7 @@ namespace tracker
             this.EncountersList = new System.Windows.Forms.ListView();
             this.EncounterMobName = new System.Windows.Forms.ColumnHeader();
             this.EncounterCode = new System.Windows.Forms.ColumnHeader();
+            this.EncounterCount = new System.Windows.Forms.ColumnHeader();
             this.PartyPage = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -68,6 +69,7 @@ namespace tracker
             this.PlayerActionPoints = new System.Windows.Forms.ColumnHeader();
             this.PlayerSurges = new System.Windows.Forms.ColumnHeader();
             this.MonstersPage = new System.Windows.Forms.TabPage();
+            this.MobNewEncounter = new System.Windows.Forms.Button();
             this.MobEncounters = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.MobDatabase = new System.Windows.Forms.GroupBox();
@@ -87,8 +89,6 @@ namespace tracker
             this.MobFort = new System.Windows.Forms.ColumnHeader();
             this.MobRef = new System.Windows.Forms.ColumnHeader();
             this.MobWill = new System.Windows.Forms.ColumnHeader();
-            this.EncounterCount = new System.Windows.Forms.ColumnHeader();
-            this.MobNewEncounter = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.TrackerPage.SuspendLayout();
             this.EncountersPage.SuspendLayout();
@@ -100,6 +100,9 @@ namespace tracker
             // 
             // tabControl1
             // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.TrackerPage);
             this.tabControl1.Controls.Add(this.EncountersPage);
             this.tabControl1.Controls.Add(this.PartyPage);
@@ -243,6 +246,11 @@ namespace tracker
             // 
             this.EncounterCode.Text = "Code";
             this.EncounterCode.Width = 43;
+            // 
+            // EncounterCount
+            // 
+            this.EncounterCount.Text = "Count";
+            this.EncounterCount.Width = 45;
             // 
             // PartyPage
             // 
@@ -435,6 +443,16 @@ namespace tracker
             this.MonstersPage.Text = "Monsters";
             this.MonstersPage.UseVisualStyleBackColor = true;
             // 
+            // MobNewEncounter
+            // 
+            this.MobNewEncounter.Location = new System.Drawing.Point(310, 117);
+            this.MobNewEncounter.Name = "MobNewEncounter";
+            this.MobNewEncounter.Size = new System.Drawing.Size(75, 34);
+            this.MobNewEncounter.TabIndex = 6;
+            this.MobNewEncounter.Text = "New Encounter";
+            this.MobNewEncounter.UseVisualStyleBackColor = true;
+            this.MobNewEncounter.Click += new System.EventHandler(this.MobNewEncounter_Click);
+            // 
             // MobEncounters
             // 
             this.MobEncounters.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -600,21 +618,6 @@ namespace tracker
             this.MobWill.DisplayIndex = 5;
             this.MobWill.Text = "W";
             this.MobWill.Width = 34;
-            // 
-            // EncounterCount
-            // 
-            this.EncounterCount.Text = "Count";
-            this.EncounterCount.Width = 45;
-            // 
-            // MobNewEncounter
-            // 
-            this.MobNewEncounter.Location = new System.Drawing.Point(310, 117);
-            this.MobNewEncounter.Name = "MobNewEncounter";
-            this.MobNewEncounter.Size = new System.Drawing.Size(75, 34);
-            this.MobNewEncounter.TabIndex = 6;
-            this.MobNewEncounter.Text = "New Encounter";
-            this.MobNewEncounter.UseVisualStyleBackColor = true;
-            this.MobNewEncounter.Click += new System.EventHandler(this.MobNewEncounter_Click);
             // 
             // Form1
             // 

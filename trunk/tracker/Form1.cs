@@ -158,7 +158,7 @@ namespace tracker
             enc.name = "New_Encounter_" + tr.newGUID().ToString();
 
             tr.addEncounter(enc);
-            MobEncounters.Select(MobEncounters.Items.Count-1, 1);
+            MobEncounters.SelectedItem = MobEncounters.Items[MobEncounters.Items.Count - 1];
         }
     }
 }
