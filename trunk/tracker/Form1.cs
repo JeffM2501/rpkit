@@ -117,5 +117,48 @@ namespace tracker
                 tr.deleteMonster(selMob);
             }
         }
+
+        // encounters
+
+        public void clearEncounters()
+        {
+            EncountersList.Items.Clear();
+            MobEncounters.Items.Clear();
+        }
+
+        public int addEncounter(Encounter e)
+        {
+            int id = EncountersList.Items.Count;
+            ListViewItem item = new ListViewItem(e.name, id);
+            item.SubItems.Add(e.code);
+            item.SubItems.Add(e.monsters.Count.ToString());
+            EncountersList.Items.Add(item);
+
+            MobEncounters.Items.Add(e.name);
+
+            return id;
+        }
+
+        public int currentEncounter()
+        {
+            if (EncountersList.SelectedItems.Count == 0)
+                return -1;
+
+            return EncountersList.SelectedItems[0].Index;
+        }
+
+        private void MobEncounters_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MobNewEncounter_Click(object sender, EventArgs e)
+        {
+            Encounter enc = new Encounter();
+            enc.name = "New_Encounter_" + tr.newGUID().ToString();
+
+            tr.addEncounter(enc);
+            MobEncounters.Select(MobEncounters.Items.Count-1, 1);
+        }
     }
 }

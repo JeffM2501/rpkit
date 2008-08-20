@@ -42,6 +42,10 @@ namespace tracker
             this.Ref = new System.Windows.Forms.ColumnHeader();
             this.Will = new System.Windows.Forms.ColumnHeader();
             this.Status = new System.Windows.Forms.ColumnHeader();
+            this.EncountersPage = new System.Windows.Forms.TabPage();
+            this.EncountersList = new System.Windows.Forms.ListView();
+            this.EncounterMobName = new System.Windows.Forms.ColumnHeader();
+            this.EncounterCode = new System.Windows.Forms.ColumnHeader();
             this.PartyPage = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -83,17 +87,15 @@ namespace tracker
             this.MobFort = new System.Windows.Forms.ColumnHeader();
             this.MobRef = new System.Windows.Forms.ColumnHeader();
             this.MobWill = new System.Windows.Forms.ColumnHeader();
-            this.EncountersPage = new System.Windows.Forms.TabPage();
-            this.EncountersList = new System.Windows.Forms.ListView();
-            this.EncounterMobName = new System.Windows.Forms.ColumnHeader();
-            this.EncounterCode = new System.Windows.Forms.ColumnHeader();
+            this.EncounterCount = new System.Windows.Forms.ColumnHeader();
+            this.MobNewEncounter = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.TrackerPage.SuspendLayout();
+            this.EncountersPage.SuspendLayout();
             this.PartyPage.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.MonstersPage.SuspendLayout();
             this.MobDatabase.SuspendLayout();
-            this.EncountersPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -206,6 +208,41 @@ namespace tracker
             // 
             this.Status.Text = "Status";
             this.Status.Width = 48;
+            // 
+            // EncountersPage
+            // 
+            this.EncountersPage.Controls.Add(this.EncountersList);
+            this.EncountersPage.Location = new System.Drawing.Point(4, 22);
+            this.EncountersPage.Name = "EncountersPage";
+            this.EncountersPage.Size = new System.Drawing.Size(393, 429);
+            this.EncountersPage.TabIndex = 3;
+            this.EncountersPage.Text = "Encounters";
+            this.EncountersPage.UseVisualStyleBackColor = true;
+            // 
+            // EncountersList
+            // 
+            this.EncountersList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.EncounterMobName,
+            this.EncounterCode,
+            this.EncounterCount});
+            this.EncountersList.GridLines = true;
+            this.EncountersList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.EncountersList.Location = new System.Drawing.Point(4, 4);
+            this.EncountersList.Name = "EncountersList";
+            this.EncountersList.Size = new System.Drawing.Size(386, 247);
+            this.EncountersList.TabIndex = 0;
+            this.EncountersList.UseCompatibleStateImageBehavior = false;
+            this.EncountersList.View = System.Windows.Forms.View.Details;
+            // 
+            // EncounterMobName
+            // 
+            this.EncounterMobName.Text = "Name";
+            this.EncounterMobName.Width = 292;
+            // 
+            // EncounterCode
+            // 
+            this.EncounterCode.Text = "Code";
+            this.EncounterCode.Width = 43;
             // 
             // PartyPage
             // 
@@ -384,6 +421,7 @@ namespace tracker
             // 
             // MonstersPage
             // 
+            this.MonstersPage.Controls.Add(this.MobNewEncounter);
             this.MonstersPage.Controls.Add(this.MobEncounters);
             this.MonstersPage.Controls.Add(this.label2);
             this.MonstersPage.Controls.Add(this.MobDatabase);
@@ -405,6 +443,7 @@ namespace tracker
             this.MobEncounters.Name = "MobEncounters";
             this.MobEncounters.Size = new System.Drawing.Size(93, 21);
             this.MobEncounters.TabIndex = 5;
+            this.MobEncounters.SelectedIndexChanged += new System.EventHandler(this.MobEncounters_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -562,38 +601,20 @@ namespace tracker
             this.MobWill.Text = "W";
             this.MobWill.Width = 34;
             // 
-            // EncountersPage
+            // EncounterCount
             // 
-            this.EncountersPage.Controls.Add(this.EncountersList);
-            this.EncountersPage.Location = new System.Drawing.Point(4, 22);
-            this.EncountersPage.Name = "EncountersPage";
-            this.EncountersPage.Size = new System.Drawing.Size(393, 429);
-            this.EncountersPage.TabIndex = 3;
-            this.EncountersPage.Text = "Encounters";
-            this.EncountersPage.UseVisualStyleBackColor = true;
+            this.EncounterCount.Text = "Count";
+            this.EncounterCount.Width = 45;
             // 
-            // EncountersList
+            // MobNewEncounter
             // 
-            this.EncountersList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.EncounterMobName,
-            this.EncounterCode});
-            this.EncountersList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.EncountersList.Location = new System.Drawing.Point(4, 4);
-            this.EncountersList.Name = "EncountersList";
-            this.EncountersList.Size = new System.Drawing.Size(386, 247);
-            this.EncountersList.TabIndex = 0;
-            this.EncountersList.UseCompatibleStateImageBehavior = false;
-            this.EncountersList.View = System.Windows.Forms.View.Details;
-            // 
-            // EncounterMobName
-            // 
-            this.EncounterMobName.Text = "Name";
-            this.EncounterMobName.Width = 114;
-            // 
-            // EncounterCode
-            // 
-            this.EncounterCode.Text = "Code";
-            this.EncounterCode.Width = 50;
+            this.MobNewEncounter.Location = new System.Drawing.Point(310, 117);
+            this.MobNewEncounter.Name = "MobNewEncounter";
+            this.MobNewEncounter.Size = new System.Drawing.Size(75, 34);
+            this.MobNewEncounter.TabIndex = 6;
+            this.MobNewEncounter.Text = "New Encounter";
+            this.MobNewEncounter.UseVisualStyleBackColor = true;
+            this.MobNewEncounter.Click += new System.EventHandler(this.MobNewEncounter_Click);
             // 
             // Form1
             // 
@@ -603,6 +624,7 @@ namespace tracker
             this.Text = "4th Edtion Party Tracker";
             this.tabControl1.ResumeLayout(false);
             this.TrackerPage.ResumeLayout(false);
+            this.EncountersPage.ResumeLayout(false);
             this.PartyPage.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -610,7 +632,6 @@ namespace tracker
             this.MonstersPage.PerformLayout();
             this.MobDatabase.ResumeLayout(false);
             this.MobDatabase.PerformLayout();
-            this.EncountersPage.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -676,6 +697,8 @@ namespace tracker
         private System.Windows.Forms.ColumnHeader EncounterMobName;
         private System.Windows.Forms.ColumnHeader EncounterCode;
         private System.Windows.Forms.Button MobEdit;
+        private System.Windows.Forms.ColumnHeader EncounterCount;
+        private System.Windows.Forms.Button MobNewEncounter;
     }
 }
 

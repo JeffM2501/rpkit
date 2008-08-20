@@ -172,7 +172,6 @@ namespace tracker
 
     public class Monster : ICloneable
     {
-
         public Monster( int id )
         {
             dirty = false;
@@ -244,7 +243,6 @@ namespace tracker
         {
             return (Monster)MemberwiseClone();
         }
-
     }
 
     public class MonsterInstance
@@ -261,7 +259,7 @@ namespace tracker
             parent = null;
 
             name = stream.ReadLine();
-            GUID = int.TryParse(stream.ReadLine());
+            GUID = int.Parse(stream.ReadLine());
             stats.read(stream, false);
         }
 
@@ -270,11 +268,6 @@ namespace tracker
             stream.WriteLine(name);
             stream.WriteLine(GUID.ToString());
             stats.write(stream, false);
-
-            stream.WriteLine(XP.ToString());
-            stream.WriteLine(level.ToString());
-
-            //write out the extra info later
         }
     }
 
@@ -293,13 +286,20 @@ namespace tracker
     {
         public List<MonsterInstance> monsters = new List<MonsterInstance>();
         public string name = string.Empty;
+        public bool dirty = false;
+        public string code = string.Empty;
+
+        public string getFileName()
+        {
+            return name + ".txt";
+        }
 
         public void read(StreamReader stream)
         {
             monsters.Clear();
             name = stream.ReadLine();
-            int count =0;
-            int.TryParse(stream.ReadLine(), count);
+            code = stream.ReadLine();
+            int count = int.Parse(stream.ReadLine());
 
             for (int i = 0; i < count; i++)
             {
@@ -312,13 +312,11 @@ namespace tracker
         public void write(StreamWriter stream)
         {
             stream.WriteLine(name);
-            stream.WriteLine(GUID.ToString());
-            stats.write(stream, false);
+            stream.WriteLine(code);
+            stream.WriteLine(monsters.Count.ToString());
 
-            stream.WriteLine(XP.ToString());
-            stream.WriteLine(level.ToString());
-
-            //write out the extra info later
+            foreach( MonsterInstance m in monsters)
+                m.write(stream);
         }
     }
 }
