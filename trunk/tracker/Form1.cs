@@ -13,6 +13,7 @@ namespace tracker
     public partial class Form1 : Form
     {
         TrackerLogic tr;
+        private int selectedEncounter = -1;
 
         public Form1()
         {
@@ -122,34 +123,27 @@ namespace tracker
 
         public void clearEncounters()
         {
-            EncountersList.Items.Clear();
             MobEncounters.Items.Clear();
         }
 
         public int addEncounter(Encounter e)
         {
-            int id = EncountersList.Items.Count;
-            ListViewItem item = new ListViewItem(e.name, id);
-            item.SubItems.Add(e.code);
-            item.SubItems.Add(e.monsters.Count.ToString());
-            EncountersList.Items.Add(item);
-
             MobEncounters.Items.Add(e.name);
 
-            return id;
+            return MobEncounters.Items.Count - 1;
         }
 
         public int currentEncounter()
         {
-            if (EncountersList.SelectedItems.Count == 0)
+            if (MobEncounters.SelectedIndex == -1)
                 return -1;
 
-            return EncountersList.SelectedItems[0].Index;
+            return MobEncounters.SelectedIndex;
         }
 
         private void MobEncounters_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            selectedEncounter = MobEncounters.SelectedIndex;
         }
 
         private void MobNewEncounter_Click(object sender, EventArgs e)
@@ -159,6 +153,62 @@ namespace tracker
 
             tr.addEncounter(enc);
             MobEncounters.SelectedItem = MobEncounters.Items[MobEncounters.Items.Count - 1];
+        }
+
+        private void MonstersPage_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MobDatabase_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PartyDelete_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PartyNew_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PartyEdit_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MobEncounters_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MobEncounters_Leave(object sender, EventArgs e)
+        {
+            int index = selectedEncounter;
+            if ( index != -1 )
+            {
+                Encounter enc = tr.getEncounter(index);
+                string newName = MobEncounters.Text;
+                if (enc.name != newName)
+                {
+                    enc.name = newName;
+                    enc.dirty = true;
+                    tr.encountersChanged();
+                }
+            }
         }
     }
 }

@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace tracker
 {
@@ -89,6 +91,23 @@ namespace tracker
 
         private void flushDirtyMonsters ( )
         {
+            XmlSerializer xml = new XmlSerializer(typeof(MonsterDB));
+            string rootDir = "./";
+
+            FileInfo f = new FileInfo(rootDir +"monsterDB.xml");
+
+            FileStream fs = f.OpenWrite();
+            StreamWriter file = new StreamWriter(fs);
+
+            xml.Serialize(file, monsterDB);
+
+            file.Close();
+            fs.Close();
+
+        }
+
+        private void flushDirtyMonstersTXT ( )
+        {
             string rootDir = "./";
             string mobDir = "mobs";
             DirectoryInfo dir = new DirectoryInfo(rootDir + mobDir);
@@ -165,7 +184,7 @@ namespace tracker
                 f.Delete();
         }
 
-        private void flushDirtyEncounters()
+        public void flushDirtyEncounters()
         {
             string rootDir = "./";
             string encounterDir = "encounters";
