@@ -56,6 +56,17 @@ namespace tracker
             return monsterDB.items[index];
         }
 
+        public Monster findMonster (int GUID)
+        {
+            foreach (Monster m in monsterDB.items)
+            {
+                if (GUID == m.GUID)
+                    return m;
+            }
+            return null;
+        }
+
+
         public void deleteMonster (int index)
         {
             clearMonsterFile(getMonster(index));
@@ -106,38 +117,6 @@ namespace tracker
 
         }
 
-        private void flushDirtyMonstersTXT ( )
-        {
-            string rootDir = "./";
-            string mobDir = "mobs";
-            DirectoryInfo dir = new DirectoryInfo(rootDir + mobDir);
-
-            if (!dir.Exists)
-                dir.Create();
-
-            foreach (Monster m in monsterDB.items)
-            {
-                if (m.dirty && m.name.Length > 0)
-                {
-                    // open the file and write it.
-
-                    FileInfo f = new FileInfo(rootDir + mobDir + "/" + m.getFileName());
-                  //  if (!f.Exists)
-                 //       f.Create();
-
-                    FileStream fs = f.OpenWrite();
-                    StreamWriter file = new StreamWriter(fs);
-
-                    m.write(file);
-
-                    file.Close();
-                    fs.Close();
-
-                    m.dirty = false;
-                }
-            }
-        }
-
         // encounters
         public void fillEncounterList ()
         {
@@ -179,7 +158,7 @@ namespace tracker
             if (!dir.Exists)
                 return;
 
-            FileInfo f = new FileInfo(rootDir + encountersDIr + "/" + e.getFileName());
+            FileInfo f = new FileInfo(rootDir + encountersDIr + "/" + e.name + ".xml");
             if (f.Exists)
                 f.Delete();
         }
@@ -195,18 +174,17 @@ namespace tracker
 
             foreach (Encounter e in encounters)
             {
-                if (e.dirty && e.name.Length > 0)
+                if ( e.dirty && (e.name.Length > 0))
                 {
                     // open the file and write it.
 
-                    FileInfo f = new FileInfo(rootDir + encounterDir + "/" + e.getFileName());
-                    //  if (!f.Exists)
-                    //       f.Create();
+                    FileInfo f = new FileInfo(rootDir + encounterDir + "/" + e.name + ".xml");
 
                     FileStream fs = f.OpenWrite();
                     StreamWriter file = new StreamWriter(fs);
 
-                    e.write(file);
+                    XmlSerializer xml = new XmlSerializer(typeof(Encounter));
+                    xml.Serialize(file, e);
 
                     file.Close();
                     fs.Close();
@@ -216,52 +194,69 @@ namespace tracker
             }
         }
 
+        private void linkEncounters ()
+        {
+            foreach (Encounter e in encounters)
+            {
+                foreach (MonsterInstance i in e.monsters)
+                {
+                    Monster m = findMonster(i.GUID);
+                    if (m != null)
+                        i.parent = m;
+                    else
+                        e.monsters.Remove(i); // if the monster can't be found, delete it? or maybe just flag it
+                }
+            }
+        }
+
+        private void loadMonsterDB ( )
+        {
+            XmlSerializer xml = new XmlSerializer(typeof(MonsterDB));
+            string rootDir = "./";
+
+            FileInfo f = new FileInfo(rootDir + "monsterDB.xml");
+
+            FileStream fs = f.OpenRead();
+            StreamReader file = new StreamReader(fs);
+
+            monsterDB = (MonsterDB)xml.Deserialize(file);
+
+            file.Close();
+            fs.Close();
+        }
+
+        private void loadParty (StreamReader stream)
+        {
+            XmlSerializer xml = new XmlSerializer(typeof(Party));
+            parties.Add((Party)xml.Deserialize(stream));
+        }
+
+        private void loadEncounter(StreamReader stream)
+        {
+            XmlSerializer xml = new XmlSerializer(typeof(Encounter));
+            encounters.Add((Encounter)xml.Deserialize(stream));
+        }
 
         // database
         private void loadDatabases()
         {
-            // load the mob list
+            loadMonsterDB();
+
             string rootDir = "./";
-            DirectoryInfo dir = new DirectoryInfo(rootDir + "mobs");
+
+            // load the parties list
+            DirectoryInfo dir = new DirectoryInfo(rootDir + "parties");
             if (dir.Exists)
             {
-                foreach (FileInfo f in dir.GetFiles("*.txt"))
+                foreach (FileInfo f in dir.GetFiles("*.xml"))
                 {
                     FileStream fs = f.OpenRead();
                     StreamReader file = new StreamReader(fs);
 
-                    Monster mob = new Monster(0);
-
-                    mob.read(file);
-                    monsterDB.items.Add(mob);
+                    loadParty(file);
 
                     file.Close();
                     fs.Close();
-                }
-            }
-
-            // load the parties list
-            dir = new DirectoryInfo(rootDir + "parties");
-            if (dir.Exists)
-            {
-                foreach (DirectoryInfo d in dir.GetDirectories())
-                {
-                    Party party = new Party();
-                    party.name = d.Name;
-
-                    foreach (FileInfo f in d.GetFiles("*.txt"))
-                    {
-                        FileStream fs = f.OpenRead();
-                        StreamReader file = new StreamReader(fs);
-
-                        Player p = new Player(0);
-
-                        p.read(file);
-                        party.players.Add(p);
-
-                        file.Close();
-                        fs.Close();
-                    }
                 }
             }
 
@@ -269,19 +264,20 @@ namespace tracker
             dir = new DirectoryInfo(rootDir + "encounters");
             if (dir.Exists)
             {
-                foreach (FileInfo f in dir.GetFiles("*.txt"))
+                foreach (FileInfo f in dir.GetFiles("*.xml"))
                 {
                     FileStream fs = f.OpenRead();
                     StreamReader file = new StreamReader(fs);
 
                     Encounter enc = new Encounter();
 
-                    enc.read(file);
-                    encounters.Add(enc);
+                    loadEncounter(file);
 
                     file.Close();
                     fs.Close();
                 }
+
+                linkEncounters();
             }
 
         }
