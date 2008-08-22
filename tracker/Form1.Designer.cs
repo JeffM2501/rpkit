@@ -42,7 +42,10 @@ namespace tracker
             this.Ref = new System.Windows.Forms.ColumnHeader();
             this.Will = new System.Windows.Forms.ColumnHeader();
             this.Status = new System.Windows.Forms.ColumnHeader();
+            this.TrackerNotes = new System.Windows.Forms.ColumnHeader();
             this.PartyPage = new System.Windows.Forms.TabPage();
+            this.PartyNew = new System.Windows.Forms.Button();
+            this.PartyEdit = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.PartyParties = new System.Windows.Forms.ComboBox();
@@ -63,7 +66,15 @@ namespace tracker
             this.PlayerHP = new System.Windows.Forms.ColumnHeader();
             this.PlayerActionPoints = new System.Windows.Forms.ColumnHeader();
             this.PlayerSurges = new System.Windows.Forms.ColumnHeader();
+            this.PlayerNotes = new System.Windows.Forms.ColumnHeader();
             this.MonstersPage = new System.Windows.Forms.TabPage();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.MobAddToEnc = new System.Windows.Forms.Button();
+            this.MobRemFromEnc = new System.Windows.Forms.Button();
+            this.EncounterMobList = new System.Windows.Forms.ListView();
+            this.EncounterItemName = new System.Windows.Forms.ColumnHeader();
+            this.EncounterItemID = new System.Windows.Forms.ColumnHeader();
+            this.button1 = new System.Windows.Forms.Button();
             this.MobNewEncounter = new System.Windows.Forms.Button();
             this.MobEncounters = new System.Windows.Forms.ComboBox();
             this.MobDatabase = new System.Windows.Forms.GroupBox();
@@ -81,24 +92,13 @@ namespace tracker
             this.MobFort = new System.Windows.Forms.ColumnHeader();
             this.MobRef = new System.Windows.Forms.ColumnHeader();
             this.MobWill = new System.Windows.Forms.ColumnHeader();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.listView1 = new System.Windows.Forms.ListView();
-            this.EncounterItemName = new System.Windows.Forms.ColumnHeader();
-            this.EncounterItemID = new System.Windows.Forms.ColumnHeader();
-            this.MobAddToEnc = new System.Windows.Forms.Button();
-            this.MobRemFromEnc = new System.Windows.Forms.Button();
-            this.PlayerNotes = new System.Windows.Forms.ColumnHeader();
-            this.TrackerNotes = new System.Windows.Forms.ColumnHeader();
-            this.PartyEdit = new System.Windows.Forms.Button();
-            this.PartyNew = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.TrackerPage.SuspendLayout();
             this.PartyPage.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.MonstersPage.SuspendLayout();
-            this.MobDatabase.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.MobDatabase.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -127,7 +127,6 @@ namespace tracker
             this.TrackerPage.TabIndex = 0;
             this.TrackerPage.Text = "Tracker";
             this.TrackerPage.UseVisualStyleBackColor = true;
-            this.TrackerPage.Click += new System.EventHandler(this.tabPage1_Click);
             // 
             // Start
             // 
@@ -168,6 +167,7 @@ namespace tracker
             this.TrackerList.FullRowSelect = true;
             this.TrackerList.GridLines = true;
             this.TrackerList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.TrackerList.HideSelection = false;
             this.TrackerList.Location = new System.Drawing.Point(10, 7);
             this.TrackerList.Name = "TrackerList";
             this.TrackerList.Size = new System.Drawing.Size(600, 442);
@@ -220,6 +220,11 @@ namespace tracker
             this.Status.Text = "Status";
             this.Status.Width = 48;
             // 
+            // TrackerNotes
+            // 
+            this.TrackerNotes.Text = "Notes";
+            this.TrackerNotes.Width = 149;
+            // 
             // PartyPage
             // 
             this.PartyPage.Controls.Add(this.PartyNew);
@@ -237,6 +242,26 @@ namespace tracker
             this.PartyPage.Text = "Party";
             this.PartyPage.UseVisualStyleBackColor = true;
             // 
+            // PartyNew
+            // 
+            this.PartyNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.PartyNew.Location = new System.Drawing.Point(462, 395);
+            this.PartyNew.Name = "PartyNew";
+            this.PartyNew.Size = new System.Drawing.Size(75, 23);
+            this.PartyNew.TabIndex = 6;
+            this.PartyNew.Text = "New";
+            this.PartyNew.UseVisualStyleBackColor = true;
+            // 
+            // PartyEdit
+            // 
+            this.PartyEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.PartyEdit.Location = new System.Drawing.Point(543, 395);
+            this.PartyEdit.Name = "PartyEdit";
+            this.PartyEdit.Size = new System.Drawing.Size(75, 23);
+            this.PartyEdit.TabIndex = 5;
+            this.PartyEdit.Text = "Edit";
+            this.PartyEdit.UseVisualStyleBackColor = true;
+            // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
@@ -252,7 +277,6 @@ namespace tracker
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Database";
-            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
             // 
             // label1
             // 
@@ -282,7 +306,6 @@ namespace tracker
             this.PartyDBSave.TabIndex = 2;
             this.PartyDBSave.Text = "Save";
             this.PartyDBSave.UseVisualStyleBackColor = true;
-            this.PartyDBSave.Click += new System.EventHandler(this.PartyEdit_Click);
             // 
             // PartyDBDelete
             // 
@@ -292,7 +315,6 @@ namespace tracker
             this.PartyDBDelete.TabIndex = 1;
             this.PartyDBDelete.Text = "Delete";
             this.PartyDBDelete.UseVisualStyleBackColor = true;
-            this.PartyDBDelete.Click += new System.EventHandler(this.PartyDelete_Click);
             // 
             // PartyDBAdd
             // 
@@ -306,7 +328,7 @@ namespace tracker
             // PartyShortRest
             // 
             this.PartyShortRest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.PartyShortRest.Location = new System.Drawing.Point(163, 395);
+            this.PartyShortRest.Location = new System.Drawing.Point(82, 395);
             this.PartyShortRest.Name = "PartyShortRest";
             this.PartyShortRest.Size = new System.Drawing.Size(75, 23);
             this.PartyShortRest.TabIndex = 3;
@@ -316,7 +338,7 @@ namespace tracker
             // PartyMilestone
             // 
             this.PartyMilestone.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.PartyMilestone.Location = new System.Drawing.Point(82, 395);
+            this.PartyMilestone.Location = new System.Drawing.Point(163, 395);
             this.PartyMilestone.Name = "PartyMilestone";
             this.PartyMilestone.Size = new System.Drawing.Size(75, 23);
             this.PartyMilestone.TabIndex = 2;
@@ -353,6 +375,7 @@ namespace tracker
             this.PartyList.FullRowSelect = true;
             this.PartyList.GridLines = true;
             this.PartyList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.PartyList.HideSelection = false;
             this.PartyList.Location = new System.Drawing.Point(4, 4);
             this.PartyList.Name = "PartyList";
             this.PartyList.Size = new System.Drawing.Size(608, 385);
@@ -410,6 +433,11 @@ namespace tracker
             this.PlayerSurges.Text = "Surges";
             this.PlayerSurges.Width = 46;
             // 
+            // PlayerNotes
+            // 
+            this.PlayerNotes.Text = "Notes";
+            this.PlayerNotes.Width = 136;
+            // 
             // MonstersPage
             // 
             this.MonstersPage.Controls.Add(this.groupBox2);
@@ -420,7 +448,85 @@ namespace tracker
             this.MonstersPage.TabIndex = 2;
             this.MonstersPage.Text = "Monsters";
             this.MonstersPage.UseVisualStyleBackColor = true;
-            this.MonstersPage.Click += new System.EventHandler(this.MonstersPage_Click);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.MobAddToEnc);
+            this.groupBox2.Controls.Add(this.MobRemFromEnc);
+            this.groupBox2.Controls.Add(this.EncounterMobList);
+            this.groupBox2.Controls.Add(this.button1);
+            this.groupBox2.Controls.Add(this.MobNewEncounter);
+            this.groupBox2.Controls.Add(this.MobEncounters);
+            this.groupBox2.Location = new System.Drawing.Point(294, 3);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(324, 478);
+            this.groupBox2.TabIndex = 8;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Encounters";
+            // 
+            // MobAddToEnc
+            // 
+            this.MobAddToEnc.Font = new System.Drawing.Font("Wingdings", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
+            this.MobAddToEnc.Location = new System.Drawing.Point(4, 131);
+            this.MobAddToEnc.Name = "MobAddToEnc";
+            this.MobAddToEnc.Size = new System.Drawing.Size(28, 28);
+            this.MobAddToEnc.TabIndex = 9;
+            this.MobAddToEnc.Text = "è";
+            this.MobAddToEnc.UseVisualStyleBackColor = true;
+            this.MobAddToEnc.Click += new System.EventHandler(this.MobAddToEnc_Click);
+            // 
+            // MobRemFromEnc
+            // 
+            this.MobRemFromEnc.Font = new System.Drawing.Font("Wingdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
+            this.MobRemFromEnc.Location = new System.Drawing.Point(4, 165);
+            this.MobRemFromEnc.Name = "MobRemFromEnc";
+            this.MobRemFromEnc.Size = new System.Drawing.Size(28, 30);
+            this.MobRemFromEnc.TabIndex = 10;
+            this.MobRemFromEnc.Text = "x";
+            this.MobRemFromEnc.UseVisualStyleBackColor = true;
+            this.MobRemFromEnc.Click += new System.EventHandler(this.MobRemFromEnc_Click);
+            // 
+            // EncounterMobList
+            // 
+            this.EncounterMobList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.EncounterMobList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.EncounterItemName,
+            this.EncounterItemID});
+            this.EncounterMobList.FullRowSelect = true;
+            this.EncounterMobList.GridLines = true;
+            this.EncounterMobList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.EncounterMobList.HideSelection = false;
+            this.EncounterMobList.LabelEdit = true;
+            this.EncounterMobList.Location = new System.Drawing.Point(34, 45);
+            this.EncounterMobList.Name = "EncounterMobList";
+            this.EncounterMobList.Size = new System.Drawing.Size(262, 428);
+            this.EncounterMobList.TabIndex = 9;
+            this.EncounterMobList.UseCompatibleStateImageBehavior = false;
+            this.EncounterMobList.View = System.Windows.Forms.View.Details;
+            this.EncounterMobList.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.EncounterMobList_AfterLabelEdit);
+            // 
+            // EncounterItemName
+            // 
+            this.EncounterItemName.Text = "Name";
+            this.EncounterItemName.Width = 197;
+            // 
+            // EncounterItemID
+            // 
+            this.EncounterItemID.Text = "Count";
+            // 
+            // button1
+            // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(261, 14);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(56, 23);
+            this.button1.TabIndex = 8;
+            this.button1.Text = "Delete";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // MobNewEncounter
             // 
@@ -443,7 +549,6 @@ namespace tracker
             this.MobEncounters.TabIndex = 5;
             this.MobEncounters.SelectedIndexChanged += new System.EventHandler(this.MobEncounters_SelectedIndexChanged);
             this.MobEncounters.Leave += new System.EventHandler(this.MobEncounters_Leave);
-            this.MobEncounters.TextChanged += new System.EventHandler(this.MobEncounters_TextChanged);
             // 
             // MobDatabase
             // 
@@ -463,7 +568,6 @@ namespace tracker
             this.MobDatabase.TabIndex = 3;
             this.MobDatabase.TabStop = false;
             this.MobDatabase.Text = "Database";
-            this.MobDatabase.Enter += new System.EventHandler(this.MobDatabase_Enter);
             // 
             // MobEdit
             // 
@@ -540,6 +644,7 @@ namespace tracker
             this.MobList.FullRowSelect = true;
             this.MobList.GridLines = true;
             this.MobList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.MobList.HideSelection = false;
             this.MobList.Location = new System.Drawing.Point(7, 77);
             this.MobList.Name = "MobList";
             this.MobList.Size = new System.Drawing.Size(276, 395);
@@ -587,125 +692,21 @@ namespace tracker
             this.MobWill.Text = "W";
             this.MobWill.Width = 23;
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.MobAddToEnc);
-            this.groupBox2.Controls.Add(this.MobRemFromEnc);
-            this.groupBox2.Controls.Add(this.listView1);
-            this.groupBox2.Controls.Add(this.button1);
-            this.groupBox2.Controls.Add(this.MobNewEncounter);
-            this.groupBox2.Controls.Add(this.MobEncounters);
-            this.groupBox2.Location = new System.Drawing.Point(294, 3);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(324, 478);
-            this.groupBox2.TabIndex = 8;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Encounters";
-            // 
-            // button1
-            // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(261, 14);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(56, 23);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "Delete";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // listView1
-            // 
-            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.EncounterItemName,
-            this.EncounterItemID});
-            this.listView1.GridLines = true;
-            this.listView1.Location = new System.Drawing.Point(34, 45);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(262, 428);
-            this.listView1.TabIndex = 9;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            // 
-            // EncounterItemName
-            // 
-            this.EncounterItemName.Text = "Name";
-            this.EncounterItemName.Width = 197;
-            // 
-            // EncounterItemID
-            // 
-            this.EncounterItemID.Text = "Count";
-            // 
-            // MobAddToEnc
-            // 
-            this.MobAddToEnc.Font = new System.Drawing.Font("Wingdings", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
-            this.MobAddToEnc.Location = new System.Drawing.Point(4, 131);
-            this.MobAddToEnc.Name = "MobAddToEnc";
-            this.MobAddToEnc.Size = new System.Drawing.Size(28, 28);
-            this.MobAddToEnc.TabIndex = 9;
-            this.MobAddToEnc.Text = "è";
-            this.MobAddToEnc.UseVisualStyleBackColor = true;
-            // 
-            // MobRemFromEnc
-            // 
-            this.MobRemFromEnc.Font = new System.Drawing.Font("Wingdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
-            this.MobRemFromEnc.Location = new System.Drawing.Point(4, 165);
-            this.MobRemFromEnc.Name = "MobRemFromEnc";
-            this.MobRemFromEnc.Size = new System.Drawing.Size(28, 30);
-            this.MobRemFromEnc.TabIndex = 10;
-            this.MobRemFromEnc.Text = "x";
-            this.MobRemFromEnc.UseVisualStyleBackColor = true;
-            // 
-            // PlayerNotes
-            // 
-            this.PlayerNotes.Text = "Notes";
-            this.PlayerNotes.Width = 136;
-            // 
-            // TrackerNotes
-            // 
-            this.TrackerNotes.Text = "Notes";
-            this.TrackerNotes.Width = 149;
-            // 
-            // PartyEdit
-            // 
-            this.PartyEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.PartyEdit.Location = new System.Drawing.Point(543, 395);
-            this.PartyEdit.Name = "PartyEdit";
-            this.PartyEdit.Size = new System.Drawing.Size(75, 23);
-            this.PartyEdit.TabIndex = 5;
-            this.PartyEdit.Text = "Edit";
-            this.PartyEdit.UseVisualStyleBackColor = true;
-            this.PartyEdit.Click += new System.EventHandler(this.PartyEdit_Click_1);
-            // 
-            // PartyNew
-            // 
-            this.PartyNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.PartyNew.Location = new System.Drawing.Point(462, 395);
-            this.PartyNew.Name = "PartyNew";
-            this.PartyNew.Size = new System.Drawing.Size(75, 23);
-            this.PartyNew.TabIndex = 6;
-            this.PartyNew.Text = "New";
-            this.PartyNew.UseVisualStyleBackColor = true;
-            this.PartyNew.Click += new System.EventHandler(this.PartyNew_Click);
-            // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(623, 510);
             this.Controls.Add(this.tabControl1);
             this.Name = "Form1";
             this.Text = "4th Edtion Party Tracker";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
             this.TrackerPage.ResumeLayout(false);
             this.PartyPage.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.MonstersPage.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
             this.MobDatabase.ResumeLayout(false);
             this.MobDatabase.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -766,7 +767,7 @@ namespace tracker
         private System.Windows.Forms.Button MobEdit;
         private System.Windows.Forms.Button MobNewEncounter;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView EncounterMobList;
         private System.Windows.Forms.ColumnHeader EncounterItemName;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button MobRemFromEnc;

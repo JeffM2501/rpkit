@@ -22,15 +22,6 @@ namespace tracker
             tr = new TrackerLogic(this);  
         }
 
-        private void tabPage1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void PartyEdit_Click(object sender, EventArgs e)
-        {
-
-        }
 
         public void clearMonsters ()
         {
@@ -58,6 +49,14 @@ namespace tracker
                 return -1;
 
             return MobList.SelectedItems[0].Index;
+        }
+
+        public int currentEncoutnerItem()
+        {
+            if (EncounterMobList.SelectedItems.Count == 0)
+                return -1;
+
+            return EncounterMobList.SelectedItems[0].Index;
         }
 
         public bool addTrackerItem ( string name, int id )
@@ -133,17 +132,30 @@ namespace tracker
             return MobEncounters.Items.Count - 1;
         }
 
-        public int currentEncounter()
+        public void showEncounterMobs()
         {
-            if (MobEncounters.SelectedIndex == -1)
-                return -1;
+            EncounterMobList.Items.Clear();
+            Encounter e = tr.getEncounter(selectedEncounter);
 
-            return MobEncounters.SelectedIndex;
-        }
+            Dictionary<string, int> mobMap = new Dictionary<string,int>();
+
+            foreach (MonsterInstance i in e.monsters)
+            {
+                if ( mobMap.ContainsKey(i.name))
+                    mobMap[i.name]++;
+                else
+                    mobMap.Add(i.name,1);
+
+                ListViewItem item = new ListViewItem(i.name, EncounterMobList.Items.Count);
+                item.SubItems.Add(mobMap[i.name].ToString());
+                EncounterMobList.Items.Add(item);
+            }  
+         }
 
         private void MobEncounters_SelectedIndexChanged(object sender, EventArgs e)
         {
             selectedEncounter = MobEncounters.SelectedIndex;
+            showEncounterMobs();
         }
 
         private void MobNewEncounter_Click(object sender, EventArgs e)
@@ -153,46 +165,8 @@ namespace tracker
 
             tr.addEncounter(enc);
             MobEncounters.SelectedItem = MobEncounters.Items[MobEncounters.Items.Count - 1];
-        }
-
-        private void MonstersPage_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void MobDatabase_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void PartyDelete_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void PartyNew_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void PartyEdit_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void MobEncounters_TextChanged(object sender, EventArgs e)
-        {
-
+            selectedEncounter = MobEncounters.SelectedIndex;
+            showEncounterMobs();
         }
 
         private void MobEncounters_Leave(object sender, EventArgs e)
@@ -208,6 +182,59 @@ namespace tracker
                     enc.dirty = true;
                     tr.encountersChanged();
                 }
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            int index = selectedEncounter;
+            if (index != -1)
+            {
+                tr.deleteEncounter(index);
+            }
+        }
+
+        private void MobAddToEnc_Click(object sender, EventArgs e)
+        {
+            int selMob = currentMonster();
+       
+            if (selectedEncounter >= 0 && selMob >= 0)
+            {
+                tr.getEncounter(selectedEncounter).addMonster(tr.getMonster(selMob));
+                tr.flushDirtyEncounters();
+                showEncounterMobs();
+            }
+        }
+
+        private void MobRemFromEnc_Click(object sender, EventArgs e)
+        {
+            int selMob = currentEncoutnerItem();
+            if (selectedEncounter >= 0 && selMob >= 0)
+            {
+                tr.getEncounter(selectedEncounter).removeMonster(selMob);
+                tr.flushDirtyEncounters();
+                showEncounterMobs();
+            }
+        }
+
+        private void EncounterMobList_AfterLabelEdit(object sender, LabelEditEventArgs e)
+        {
+            if (e.Label.Length <= 0)
+            {
+                e.CancelEdit = true;
+                return;
+            }
+
+            int selMob = currentEncoutnerItem();
+            if (selectedEncounter >= 0 && selMob >= 0)
+            {
+                e.CancelEdit = false;
+                Encounter enc = tr.getEncounter(selectedEncounter);
+                MonsterInstance m = enc.monsters[selMob];
+                m.name = e.Label;
+                enc.dirty = true;
+                tr.flushDirtyEncounters();
+                showEncounterMobs();
             }
         }
     }
