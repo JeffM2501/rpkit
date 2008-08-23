@@ -48,6 +48,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlayerEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlayerEdit.Designer.cs">
+      <DependentUpon>PlayerEdit.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="EditMobDialog.resx">
@@ -57,6 +63,10 @@
     <EmbeddedResource Include="Form1.resx">
       <SubType>Designer</SubType>
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlayerEdit.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PlayerEdit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

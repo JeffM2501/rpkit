@@ -21,6 +21,18 @@ namespace tracker
 
         Form1 ui;
 
+        public string getLocalDir( bool write )
+        {
+            string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/My RPGs/";
+            if (write)
+            {
+                DirectoryInfo dInfo = new DirectoryInfo(dir);
+                if (!dInfo.Exists)
+                    dInfo.Create();
+            }
+            return dir;
+        }
+
         public int newGUID ( )
         {
             return rand.Next();
@@ -69,8 +81,8 @@ namespace tracker
 
         public void deleteMonster (int index)
         {
-            clearMonsterFile(getMonster(index));
             monsterDB.items.Remove(getMonster(index));
+            flushDirtyMonsters();
             fillMonsterList();
         }
 
@@ -86,24 +98,10 @@ namespace tracker
             flushDirtyMonsters();
         }
 
-        private void clearMonsterFile ( Monster mob )
-        {
-            string rootDir = "./";
-            string mobDir = "mobs";
-            DirectoryInfo dir = new DirectoryInfo(rootDir + mobDir);
-
-            if (!dir.Exists)
-                return;
-
-            FileInfo f = new FileInfo(rootDir + mobDir + "/" + mob.getFileName());
-            if (f.Exists)
-                f.Delete();
-        }
-
         private void flushDirtyMonsters ( )
         {
             XmlSerializer xml = new XmlSerializer(typeof(MonsterDB));
-            string rootDir = "./";
+            string rootDir = getLocalDir(true);
 
             FileInfo f = new FileInfo(rootDir +"monsterDB.xml");
 
@@ -151,7 +149,7 @@ namespace tracker
 
         private void clearEncounterFile(Encounter e)
         {
-            string rootDir = "./";
+            string rootDir = getLocalDir(false);
             string encountersDIr = "encounters";
             DirectoryInfo dir = new DirectoryInfo(rootDir + encountersDIr);
 
@@ -165,7 +163,7 @@ namespace tracker
 
         public void flushDirtyEncounters()
         {
-            string rootDir = "./";
+            string rootDir = getLocalDir(true);
             string encounterDir = "encounters";
             DirectoryInfo dir = new DirectoryInfo(rootDir + encounterDir);
 
@@ -212,9 +210,15 @@ namespace tracker
         private void loadMonsterDB ( )
         {
             XmlSerializer xml = new XmlSerializer(typeof(MonsterDB));
-            string rootDir = "./";
+            string rootDir = getLocalDir(false);
 
             FileInfo f = new FileInfo(rootDir + "monsterDB.xml");
+
+            if (!f.Exists)
+            {
+                monsterDB.items.Clear();
+                return;
+            }
 
             FileStream fs = f.OpenRead();
             StreamReader file = new StreamReader(fs);
@@ -242,7 +246,7 @@ namespace tracker
         {
             loadMonsterDB();
 
-            string rootDir = "./";
+            string rootDir = getLocalDir(false);
 
             // load the parties list
             DirectoryInfo dir = new DirectoryInfo(rootDir + "parties");
