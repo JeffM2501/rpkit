@@ -9,6 +9,8 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
+using FourETypes;
+
 namespace tracker
 {
     public class TrackerLogic

@@ -6,6 +6,9 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using FourETypes;
+
+
 namespace tracker
 {
     public partial class EditMobDialog : Form

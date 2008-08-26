@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
 
-namespace tracker
+namespace FourETypes
 {
-    public struct Defenses
+    public class Defenses
     {
         public int AC;
         public int fortitude;
@@ -16,28 +15,28 @@ namespace tracker
         public int will;
     }
 
-    public struct Health
+    public class Health
     {
         public int maxHP;
         public int currentHP;
         public int tempHP;
     }
 
-    public struct Surges
+    public class Surges
     {
         public int perDay;
         public int current;
     }
 
-    public struct CommonStats
+    public class CommonStats
     {
         public int inititive;
-        public Defenses defenses;
-        public Health health;
+        public Defenses defenses = new Defenses();
+        public Health health = new Health();
         public int actionPoints;
-        public List<string> statuses;
-        public string markTarget;
-        public string markedBy;
+        public List<string> statuses = new List<string>();
+        public string markTarget = string.Empty;
+        public string markedBy = string.Empty;
     }
 
     public class Player

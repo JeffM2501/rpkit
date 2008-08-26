@@ -87,8 +87,13 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Structs.cs" />
     <Compile Include="Tracker.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\4eTypes\4eTypes.csproj">
+      <Project>{569ED603-B761-41E3-B7EA-9EF9650F633F}</Project>
+      <Name>4eTypes</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
