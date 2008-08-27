@@ -9,15 +9,28 @@ namespace RPUsers
 {
     public class User
     {
-        string username;
-        string passwordHash;
-        string email;
+        private static List<int> usedIDs = new List<int>();
 
-        string emailKey;
+        public static int newID ( )
+        {
+            Random rng = new Random();
 
-        bool verified;
+            int id = rng.Next();
+            while (usedIDs.Contains(id))
+                id = rng.Next();
+            usedIDs.Add(id);
 
+            return id;
+        }
 
-        
+        string username = string.Empty;
+        string passwordHash = string.Empty;
+        string email = string.Empty;
+
+        string emailKey = string.Empty;
+
+        bool verified = false;
+
+        int GUID = -1;
     }
 }
