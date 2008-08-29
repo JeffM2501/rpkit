@@ -7,6 +7,9 @@ using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Threading;
+using System.ComponentModel;
+
 
 using RPUsers;
 
@@ -21,8 +24,74 @@ namespace RPServer
         public string userDir = string.Empty;
         public string md5Salt = string.Empty;
         public string smtpServer = string.Empty;
+        public int smtpPort = -1;
         public string smtpUsername = string.Empty;
         public string smtpPassword = string.Empty;
+        public bool useSSL = false;
+    }
+
+    public class Templates
+    {
+        string readFile(string path, string file)
+        {
+            string ret = null;
+
+            FileInfo f = new FileInfo(path + file);
+            if (f.Exists)
+            {
+                StreamReader stream = f.OpenText();
+                ret = stream.ReadToEnd();
+                stream.Close();
+            }
+            return ret;
+        }
+
+        public Templates(string dir)
+        {
+            // load em up
+            httpHeader = readFile(dir, "httpHeader.html");
+            httpFooter = readFile(dir, "httpFooter.html");
+
+            mainPage = readFile(dir, "mainPage.html");
+            newUserSetup = readFile(dir, "newUserSetup.html");
+            newUserError = readFile(dir, "newUserError.html");
+            newUserComplete = readFile(dir, "newUserComplete.html");
+            newUserVerified = readFile(dir, "newUserVerified.html");
+
+            mail = readFile(dir, "mail.txt");
+        }
+
+        public bool valid()
+        {
+            if (httpHeader == null)
+                return false;
+            if (httpFooter == null)
+                return false;
+            if (mainPage == null)
+                return false;
+            if (newUserSetup == null)
+                return false;
+            if (newUserError == null)
+                return false;
+            if (newUserComplete == null)
+                return false;
+            if (newUserVerified == null)
+                return false;
+            if (mail == null)
+                return false;
+
+            return true;
+        }
+
+        public string httpHeader = string.Empty;
+        public string httpFooter = string.Empty;
+        public string mainPage = string.Empty;
+        public string newUserSetup = string.Empty;
+        public string newUserError = string.Empty;
+        public string newUserComplete = string.Empty;
+        public string newUserVerified = string.Empty;
+
+        public string mail = string.Empty;
     }
 
     public class Connection 
@@ -62,75 +131,71 @@ namespace RPServer
         Dictionary<string,string>   arguments = new Dictionary<string,string>();
     }
 
-    public class Templates
+
+    public class BatchMailer
     {
-        string readFile ( string path, string file )
-        {
-            string ret = null;
+        List<MailMessage> messages = new List<MailMessage>();
+        SmtpClient mailer;
 
-            FileInfo f = new FileInfo(path + file);
-            if (f.Exists)
+        bool active = false;
+
+        public BatchMailer(Setup setup)
+        {
+            if (setup.smtpPort > 0)
+                mailer = new SmtpClient(setup.smtpServer, setup.smtpPort);
+            else
+                mailer = new SmtpClient(setup.smtpServer);
+
+            if (setup.smtpUsername.Length > 0 && setup.smtpPassword.Length > 0)
             {
-                StreamReader stream = f.OpenText();
-                ret = stream.ReadToEnd();
-                stream.Close();
+                mailer.UseDefaultCredentials = false;
+                mailer.EnableSsl = setup.useSSL;
+                mailer.Credentials = new NetworkCredential(setup.smtpUsername, setup.smtpPassword);
             }
-            return ret;
+
+            mailer.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
         }
 
-        public Templates( string dir )
+        public static void SendCompletedCallback(object sender, AsyncCompletedEventArgs e)
         {
-            // load em up
-            httpHeader = readFile(dir,"httpHeader.html");
-            httpFooter = readFile(dir, "httpFooter.html");
+            BatchMailer m = (BatchMailer)e.UserState;
 
-            mainPage = readFile(dir,"mainPage.html");
-            newUserSetup = readFile(dir,"newUserSetup.html");
-            newUserError = readFile(dir,"newUserError.html");
-            newUserComplete = readFile(dir,"newUserComplete.html");
-            newUserVerified = readFile(dir, "newUserVerified.html");
-
-            mail = readFile(dir,"mail.txt");
+            m.active = false;
+            m.messages.Remove(m.messages[0]);
+            m.add(null);
         }
 
-        public bool valid ( )
+        public void add(MailMessage messge)
         {
-            if (httpHeader == null)
-                return false;
-            if (httpFooter == null)
-                return false;
-            if (mainPage == null)
-                return false;
-            if (newUserSetup == null)
-                return false;
-            if (newUserError == null)
-                return false;
-            if (newUserComplete == null)
-                return false;
-            if (newUserVerified == null)
-                return false;
-            if (mail == null)
-                return false;
+            if (messge != null)
+                messages.Add(messge);
 
-            return true;
+            if (!active && messages.Count > 0)
+            {
+                try
+                {
+                    mailer.SendAsync(messages[0], this);
+                }
+                catch (System.Exception e)
+                {
+                    Console.WriteLine("Exception");
+                    Console.WriteLine(e);
+                    System.Net.Mail.SmtpException smptExc = e as System.Net.Mail.SmtpException;
+                    System.Net.Mail.SmtpFailedRecipientsException smptFailExc = e as System.Net.Mail.SmtpFailedRecipientsException;
+
+                    if (smptExc == null && smptFailExc == null)
+                        throw e;
+                }
+            }
         }
-
-        public string httpHeader = string.Empty;
-        public string httpFooter = string.Empty;
-        public string mainPage = string.Empty;
-        public string newUserSetup = string.Empty;
-        public string newUserError = string.Empty;
-        public string newUserComplete = string.Empty;
-        public string newUserVerified = string.Empty;
-
-        public string mail = string.Empty;
-
     }
 
     public class Server
     {
         public Setup setup = new Setup();
         Templates templates;
+
+        BatchMailer mailer;
 
         List<string> authedSessions = new List<string>();
 
@@ -179,6 +244,23 @@ namespace RPServer
             writeToContext("<h1>" + error + "</h1>", connection);
             writeHTTPFooter(connection);
             return true;
+        }
+
+        private string fillTemplate ( string template )
+        {
+            template = template.Replace("[SERVICE]", setup.serviceName);
+            template = template.Replace("[URL]", publicURL);
+
+            template = template.Replace("[TIME]", DateTime.Now.ToString());
+            return template;
+        }
+
+        private string fillTemplate(string template, string key, string val )
+        {
+            string ret = fillTemplate(template);
+            template = template.Replace("[" + key + "]", val);
+
+            return template;
         }
 
         public Server( string[] args)
@@ -237,6 +319,8 @@ namespace RPServer
             usersDir = new DirectoryInfo(setup.userDir);
             users.load(usersDir);
             templates = new Templates(setup.templateDir);
+
+            mailer = new BatchMailer(setup);
         }
 
         public void update ( )
@@ -267,37 +351,43 @@ namespace RPServer
                 // verify the info
                 if (!fieldValid(username) || !fieldValid(password) || !fieldValid(email) )
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]","Required info was missing!"),connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Required info was missing!"), connection);
                     return;
                 }
 
                 if (users.getUser(username) != null)
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "Username is taken!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Username is taken!"), connection);
+                    return;
+                }
+
+                if (users.getUserByEmail(email) != null)
+                {
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "E-mail is used by another user!"), connection);
                     return;
                 }
 
                 if ( password != password2)
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "Passwords do not match!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Passwords do not match!"), connection);
                     return;
                 }
 
                 if ( password.Length < 6)
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "Passwords too short!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Passwords too short!"), connection);
                     return;
                 }
 
                 if ( !email.Contains("@") || !email.Contains("."))
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "Invalid E-mail!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Invalid E-mail!"), connection);
                     return;
                 }
 
                 if ( email != email2)
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "E-Mail does not match!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "E-Mail does not match!"), connection);
                     return;
                 }
 
@@ -324,9 +414,7 @@ namespace RPServer
 
                 string verifyLink = publicURL + "?action=adduser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
 
-                string body = templates.mail.Replace("[SERVICE]", setup.serviceName);
-                body = body.Replace("[URL]", publicURL);
-                body = body.Replace("[USER]", username);
+                string body = fillTemplate(templates.mail,"USER", username);
                 body = body.Replace("[VERIFY]", verifyLink);
 
                 MailAddress from = new MailAddress(setup.replyEmail);
@@ -336,13 +424,7 @@ namespace RPServer
                 message.Subject = "Registration with " + setup.serviceName  + "(" + publicURL + ")"; 
                 message.Body = body;
 
-                SmtpClient mailer = new SmtpClient(setup.smtpServer);
-                if (setup.smtpUsername.Length > 0 && setup.smtpPassword.Length > 0)
-                {
-                    mailer.UseDefaultCredentials = false;
-                    mailer.Credentials = new NetworkCredential(setup.smtpUsername, setup.smtpPassword);
-                }
-                mailer.Send(message);
+                mailer.add(message);
 
                 writeToContext(templates.newUserComplete,connection);
             }
@@ -356,22 +438,17 @@ namespace RPServer
                 User user = users.getUser(int.Parse(GUID));
                 if (user == null || user.verified || token.Length <= 0)
                 {
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "Invalid Request!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Invalid Request!"), connection);
                     return;
                 }
 
                 if ( user.emailKey == token )
-                    writeToContext(templates.newUserVerified.Replace("[URL]", publicURL), connection);
+                    writeToContext(fillTemplate(templates.newUserVerified,"URL", publicURL), connection);
                 else
-                    writeToContext(templates.newUserError.Replace("[ERROR]", "Data mismatch!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Data mismatch!"), connection);
             }
             else // new user form
-            {
-                string page = templates.newUserSetup.Replace("[SERVICE]", setup.serviceName);
-                page = page.Replace("[URL]", publicURL);
-
-                writeToContext(page, connection);
-            }
+                writeToContext(fillTemplate(templates.newUserSetup), connection);
 
             writeHTTPFooter(connection);
         }
@@ -386,13 +463,9 @@ namespace RPServer
             {
                 // auth
             }
-            else
-            {
-                //login page
-                string mainpage = templates.mainPage.Replace("[SERVICE]",setup.serviceName);
-                mainpage = mainpage.Replace("[URL]", publicURL);
-                writeToContext(mainpage, connection);
-            }
+            else                //login page
+                writeToContext(fillTemplate(templates.mainPage), connection);
+
             writeHTTPFooter(connection);
         }
 
