@@ -19,8 +19,12 @@ namespace server
         {
             HttpListener  httpd = new HttpListener();
 
+            // read in some kinda prefs and setup the server
+
             server = new Server();
-            server.init();
+            server.replyEMail = "nobody@opencombat.net";
+
+            server.init("http://rpserver.opencombat.net:88/");
 
             httpd.Prefixes.Add("http://localhost:88/");
             httpd.Prefixes.Add("http://rpserver.opencombat.net:88/");
