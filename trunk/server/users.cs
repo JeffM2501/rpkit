@@ -99,6 +99,9 @@ namespace RPUsers
             user.verified = false;
 
             users.Add(user);
+
+            //write user
+
           
             return true;
         }

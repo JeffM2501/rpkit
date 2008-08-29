@@ -19,6 +19,10 @@ namespace RPServer
         public string replyEmail = string.Empty;
         public string serviceName = string.Empty;
         public string userDir = string.Empty;
+        public string md5Salt = string.Empty;
+        public string smtpServer = string.Empty;
+        public string smtpUsername = string.Empty;
+        public string smtpPassword = string.Empty;
     }
 
     public class Connection 
@@ -81,13 +85,35 @@ namespace RPServer
             httpFooter = readFile(dir, "httpFooter.html");
 
             mainPage = readFile(dir,"mainPage.html");
-            newUserSetup = readFile(dir,"newUSerSetup.html");
+            newUserSetup = readFile(dir,"newUserSetup.html");
             newUserError = readFile(dir,"newUserError.html");
             newUserComplete = readFile(dir,"newUserComplete.html");
+            newUserVerified = readFile(dir, "newUserVerified.html");
 
             mail = readFile(dir,"mail.txt");
-         }
+        }
 
+        public bool valid ( )
+        {
+            if (httpHeader == null)
+                return false;
+            if (httpFooter == null)
+                return false;
+            if (mainPage == null)
+                return false;
+            if (newUserSetup == null)
+                return false;
+            if (newUserError == null)
+                return false;
+            if (newUserComplete == null)
+                return false;
+            if (newUserVerified == null)
+                return false;
+            if (mail == null)
+                return false;
+
+            return true;
+        }
 
         public string httpHeader = string.Empty;
         public string httpFooter = string.Empty;
@@ -95,18 +121,22 @@ namespace RPServer
         public string newUserSetup = string.Empty;
         public string newUserError = string.Empty;
         public string newUserComplete = string.Empty;
+        public string newUserVerified = string.Empty;
 
-        public string mail;
+        public string mail = string.Empty;
 
     }
 
     public class Server
     {
         public Setup setup = new Setup();
+        Templates templates;
 
         List<string> authedSessions = new List<string>();
 
         Usermanager users = new Usermanager();
+
+        DirectoryInfo usersDir;
 
         public string publicURL = "http://localhost";
 
@@ -122,25 +152,33 @@ namespace RPServer
 
         private void writeHTTPHeader ( Connection connection )
         {
-            connection.context.Response.ContentType = "text/html";
-            writeToContext("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">", connection.context);
-            writeToContext("<html><head>", connection.context);
-            writeToContext("</head><body>", connection.context);
+            writeHTTPHeader(connection, "");
         }
 
         private void writeHTTPHeader(Connection connection, string title)
         {
-            connection.context.Response.ContentType = "text/html";
-            writeToContext("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">", connection.context);
-            writeToContext("<html><head>", connection.context);
-            if (title.Length > 0)
-                writeToContext("<title>" + title + "</title", connection.context);
-            writeToContext("</head><body>", connection.context);
+            if(templates.httpHeader != null)
+            {
+                connection.context.Response.ContentType = "text/html";
+                string header = templates.httpHeader.Replace("[TITLE]", title);
+                writeToContext(header, connection.context);
+            }
+            else
+                connection.context.Response.ContentType = "text/plain";
         }
 
         private void writeHTTPFooter(Connection connection)
         {
-            writeToContext("</body></html>", connection.context);
+            if (templates.httpFooter != null)
+                writeToContext(templates.httpFooter, connection.context);
+        }
+
+        private bool fatalError ( string error, Connection connection )
+        {
+            writeHTTPHeader(connection, "Fatal Error!");
+            writeToContext("<h1>" + error + "</h1>", connection);
+            writeHTTPFooter(connection);
+            return true;
         }
 
         public Server( string[] args)
@@ -173,6 +211,8 @@ namespace RPServer
                 setup.templateDir = "./templates/";
                 setup.replyEmail = "nobody@localhost.com";
                 setup.serviceName = "RPKit";
+                setup.md5Salt = "adsfasdfjasl;dfj234q23412234124v";
+                setup.smtpServer = "localhost";
 
                 // dirs
                 setup.userDir = "./users/";
@@ -194,7 +234,9 @@ namespace RPServer
             if(setup.hosts.Count > 0)
                 publicURL = setup.hosts[0];
 
-            users.load(new DirectoryInfo(setup.userDir));
+            usersDir = new DirectoryInfo(setup.userDir);
+            users.load(usersDir);
+            templates = new Templates(setup.templateDir);
         }
 
         public void update ( )
@@ -204,7 +246,7 @@ namespace RPServer
 
         private bool fieldValid ( string text )
         {
-            if (text != null || text.Length == 0)
+            if (text == null || text.Length == 0)
                 return false;
             return true;
         }
@@ -223,89 +265,112 @@ namespace RPServer
                 string email2 = connection.getArg("email2");
 
                 // verify the info
-                if (!fieldValid(username) || !fieldValid(password) || fieldValid(email) )
+                if (!fieldValid(username) || !fieldValid(password) || !fieldValid(email) )
                 {
-                    writeToContext("<h2>Required info was missing!</h2>",connection);
+                    writeToContext(templates.newUserError.Replace("[ERROR]","Required info was missing!"),connection);
                     return;
                 }
 
                 if (users.getUser(username) != null)
                 {
-                    writeToContext("<h2>Username is taken!</h2>",connection);
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "Username is taken!"), connection);
                     return;
                 }
 
                 if ( password != password2)
                 {
-                    writeToContext("<h2>Passwords do not match</h2>",connection);
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "Passwords do not match!"), connection);
                     return;
                 }
 
                 if ( password.Length < 6)
                 {
-                    writeToContext("<h2>Passwords too short</h2>",connection);
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "Passwords too short!"), connection);
                     return;
                 }
 
                 if ( !email.Contains("@") || !email.Contains("."))
                 {
-                    writeToContext("<h2>Invalid E-mail</h2>",connection);
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "Invalid E-mail!"), connection);
                     return;
                 }
 
                 if ( email != email2)
                 {
-                    writeToContext("<h2>E-Mail does not match</h2>",connection);
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "E-Mail does not match!"), connection);
                     return;
                 }
 
                 // all is good, make a user and have them verify
-
                 Random rng = new Random();
 
                 string verifyKey = string.Empty;
 
-                for ( int i = 0; i < 5; i++)
+                for (int i = 0; i < 5; i++)
                     verifyKey += rng.Next().ToString();
-
-                SmtpClient mailer = new SmtpClient();
-                string subject = "Registration with " + publicURL;
-                string body = "Thanks for registering, click this link to verify your address\n";
-                body += publicURL + "?action=adduser&mode=verify&key=" + verifyKey;
-                body += "\n<a href=\"" + publicURL + "?action=adduser&mode=verify&key=" + verifyKey + "\">Here</a>";
-
-                mailer.Send(setup.replyEmail, email, subject, body);
-
-                writeToContext("<h2>Thank you for registering, you have been sent a confirmation e-mail, click the link to verify your account</h2>",connection);
 
                 User user = new User();
                 user.email = email;
                 user.username = username;
                 user.verified = false;
                 user.emailKey = verifyKey;
-
                 MD5 md5 = MD5.Create();
-                md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(password));
+                md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(password + setup.md5Salt));
 
-                user.passwordHash = md5.GetHashCode().ToString();;
+                user.passwordHash = md5.GetHashCode().ToString();
+
+                users.adduser(user);
+                users.saveUser(user, usersDir);
+
+                string verifyLink = publicURL + "?action=adduser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
+
+                string body = templates.mail.Replace("[SERVICE]", setup.serviceName);
+                body = body.Replace("[URL]", publicURL);
+                body = body.Replace("[USER]", username);
+                body = body.Replace("[VERIFY]", verifyLink);
+
+                MailAddress from = new MailAddress(setup.replyEmail);
+                MailAddress to = new MailAddress(email);
+
+                MailMessage message = new MailMessage(from, to);
+                message.Subject = "Registration with " + setup.serviceName  + "(" + publicURL + ")"; 
+                message.Body = body;
+
+                SmtpClient mailer = new SmtpClient(setup.smtpServer);
+                if (setup.smtpUsername.Length > 0 && setup.smtpPassword.Length > 0)
+                {
+                    mailer.UseDefaultCredentials = false;
+                    mailer.Credentials = new NetworkCredential(setup.smtpUsername, setup.smtpPassword);
+                }
+                mailer.Send(message);
+
+                writeToContext(templates.newUserComplete,connection);
             }
             else if ( mode == "verify" )
             {
                 // this has to come form the verifyer
+
+                string GUID = connection.getArg("user");
+                string token = connection.getArg("key");
+
+                User user = users.getUser(int.Parse(GUID));
+                if (user == null || user.verified || token.Length <= 0)
+                {
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "Invalid Request!"), connection);
+                    return;
+                }
+
+                if ( user.emailKey == token )
+                    writeToContext(templates.newUserVerified.Replace("[URL]", publicURL), connection);
+                else
+                    writeToContext(templates.newUserError.Replace("[ERROR]", "Data mismatch!"), connection);
             }
             else // new user form
             {
-                writeToContext("</br><h2>Please fill out the following information</h2",connection);
-                writeToContext("<form name=\"input\" action=\"?\" method=\"put\">",connection);
+                string page = templates.newUserSetup.Replace("[SERVICE]", setup.serviceName);
+                page = page.Replace("[URL]", publicURL);
 
-                writeToContext("<input type=\"hidden\" name=\"action\" value=\"newuser\">",connection);
-                writeToContext("<input type=\"hidden\" name=\"mode\" value=\"adduser\">",connection);
-                writeToContext("</br>Username<input type=\"text\" name=\"username\">",connection);
-                writeToContext("</br>E-mail<input type=\"text\" name=\"email\">",connection);
-                writeToContext("</br>E-mail(confirm)<input type=\"text\" name=\"email2\">",connection);
-                writeToContext("</br>Password (6 character min)<input password=\"text\" name=\"password\">",connection);
-                writeToContext("</br>Password(confirm)<input password=\"text\" name=\"password2\">",connection);
-                writeToContext("</form></br>", connection);
+                writeToContext(page, connection);
             }
 
             writeHTTPFooter(connection);
@@ -324,14 +389,9 @@ namespace RPServer
             else
             {
                 //login page
-                writeToContext("</br><h2>Please Login</h2",connection);
-                writeToContext("<form name=\"input\" action=\"?\" method=\"put\">",connection);
-
-                writeToContext("<input type=\"hidden\" name=\"action\" value=\"login\">",connection);
-                writeToContext("</br>Username<input type=\"text\" name=\"username\">",connection);
-                writeToContext("</br>Password<input password=\"text\" name=\"password\">",connection);
-                writeToContext("</form></br>", connection);
-                writeToContext("<a href=\"?action=newuser\">New User?</a>",connection);
+                string mainpage = templates.mainPage.Replace("[SERVICE]",setup.serviceName);
+                mainpage = mainpage.Replace("[URL]", publicURL);
+                writeToContext(mainpage, connection);
             }
             writeHTTPFooter(connection);
         }
@@ -371,13 +431,14 @@ namespace RPServer
         public bool handleURL ( HttpListenerContext context )
         {
             Connection connection = new Connection(context);
+            if (!templates.valid())
+                return fatalError("Templates not valid",connection);
 
             string session = string.Empty;
 
             string action = connection.getArg("action");
             if (connection.getArg("type") == "rpkit")
                 return handleAppQuery(connection);
-
 
             // new user dosnt' need a session
             if (action == "newuser")
