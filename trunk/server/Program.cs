@@ -11,26 +11,18 @@ namespace server
     class Program
     {
         static bool runServer = true;
-
         static Server server;
 
-        static Uri rootURI;
         static void Main(string[] args)
         {
             HttpListener  httpd = new HttpListener();
 
             // read in some kinda prefs and setup the server
 
-            server = new Server();
-            server.replyEMail = "nobody@opencombat.net";
+            server = new Server(args);
 
-            server.init("http://rpserver.opencombat.net:88/");
-
-            httpd.Prefixes.Add("http://localhost:88/");
-            httpd.Prefixes.Add("http://rpserver.opencombat.net:88/");
-            httpd.Prefixes.Add("http://127.0.0.1:88/");
-
-            rootURI = new Uri("http://localhost:88/");
+            foreach (string h in server.setup.hosts)
+                httpd.Prefixes.Add(h);
 
             httpd.Start();
 
@@ -57,9 +49,7 @@ namespace server
 
             HttpListenerContext context = listener.EndGetContext(result);
 
-            Uri relURI = rootURI.MakeRelativeUri(context.Request.Url);
-
-            if (server.handleURL(context, relURI))
+            if (server.handleURL(context))
                 runServer = false;
 
             context.Response.Close();

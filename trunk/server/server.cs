@@ -5,11 +5,22 @@ using System.Net;
 using System.IO;
 using System.Net.Mail;
 using System.Security.Cryptography;
+using System.Xml;
+using System.Xml.Serialization;
 
 using RPUsers;
 
 namespace RPServer
 {
+    public class Setup
+    {
+        public List<string> hosts = new List<string>();
+        public string templateDir = string.Empty;
+        public string replyEmail = string.Empty;
+        public string serviceName = string.Empty;
+        public string userDir = string.Empty;
+    }
+
     public class Connection 
     {
         public Connection ( HttpListenerContext c )
@@ -47,14 +58,57 @@ namespace RPServer
         Dictionary<string,string>   arguments = new Dictionary<string,string>();
     }
 
+    public class Templates
+    {
+        string readFile ( string path, string file )
+        {
+            string ret = null;
+
+            FileInfo f = new FileInfo(path + file);
+            if (f.Exists)
+            {
+                StreamReader stream = f.OpenText();
+                ret = stream.ReadToEnd();
+                stream.Close();
+            }
+            return ret;
+        }
+
+        public Templates( string dir )
+        {
+            // load em up
+            httpHeader = readFile(dir,"httpHeader.html");
+            httpFooter = readFile(dir, "httpFooter.html");
+
+            mainPage = readFile(dir,"mainPage.html");
+            newUserSetup = readFile(dir,"newUSerSetup.html");
+            newUserError = readFile(dir,"newUserError.html");
+            newUserComplete = readFile(dir,"newUserComplete.html");
+
+            mail = readFile(dir,"mail.txt");
+         }
+
+
+        public string httpHeader = string.Empty;
+        public string httpFooter = string.Empty;
+        public string mainPage = string.Empty;
+        public string newUserSetup = string.Empty;
+        public string newUserError = string.Empty;
+        public string newUserComplete = string.Empty;
+
+        public string mail;
+
+    }
+
     public class Server
     {
+        public Setup setup = new Setup();
+
         List<string> authedSessions = new List<string>();
 
         Usermanager users = new Usermanager();
 
         public string publicURL = "http://localhost";
-        public string replyEMail = "nobody@host.com";
 
         private void writeToContext ( string text, HttpListenerContext context )
         {
@@ -89,12 +143,58 @@ namespace RPServer
             writeToContext("</body></html>", connection.context);
         }
 
-        public void init ( string host )
+        public Server( string[] args)
         {
-            // load all the databases
-            publicURL = host;
+            string configFile;
+            string argConf = string.Empty;
 
-            users.load(new DirectoryInfo("./users/"));
+            // load the setup from the args
+            if (args.Length > 0)
+                configFile = argConf = args[0];
+            else
+                configFile = "./config.xml";
+
+            FileInfo conf = new FileInfo(configFile);
+            if ( conf.Exists )
+            {
+                XmlSerializer xml = new XmlSerializer(typeof(Setup));
+
+                FileStream fs = conf.OpenRead();
+                StreamReader file = new StreamReader(fs);
+
+                setup = (Setup)xml.Deserialize(file);
+                file.Close();
+                fs.Close();
+            }
+            else
+            {
+                // default setups?
+                setup.hosts.Add("http://localhost:88/");
+                setup.templateDir = "./templates/";
+                setup.replyEmail = "nobody@localhost.com";
+                setup.serviceName = "RPKit";
+
+                // dirs
+                setup.userDir = "./users/";
+
+                if (argConf.Length > 0)// try to save out the conf if they wanted one
+                {
+                    XmlSerializer xml = new XmlSerializer(typeof(Setup));
+
+                    FileStream fs = conf.OpenWrite();
+                    StreamWriter file = new StreamWriter(fs);
+
+                    xml.Serialize(file, setup);
+                    file.Close();
+                    fs.Close();
+                }
+            }
+
+            // load all the databases
+            if(setup.hosts.Count > 0)
+                publicURL = setup.hosts[0];
+
+            users.load(new DirectoryInfo(setup.userDir));
         }
 
         public void update ( )
@@ -174,7 +274,7 @@ namespace RPServer
                 body += publicURL + "?action=adduser&mode=verify&key=" + verifyKey;
                 body += "\n<a href=\"" + publicURL + "?action=adduser&mode=verify&key=" + verifyKey + "\">Here</a>";
 
-                mailer.Send(replyEMail, email, subject, body);
+                mailer.Send(setup.replyEmail, email, subject, body);
 
                 writeToContext("<h2>Thank you for registering, you have been sent a confirmation e-mail, click the link to verify your account</h2>",connection);
 
@@ -268,7 +368,7 @@ namespace RPServer
             return false;
         }
 
-        public bool handleURL ( HttpListenerContext context, Uri relitiveUri )
+        public bool handleURL ( HttpListenerContext context )
         {
             Connection connection = new Connection(context);
 
