@@ -90,6 +90,17 @@ namespace RPUsers
             return null;
         }
 
+        public User getUserByEmail(string email)
+        {
+            foreach (User user in users)
+            {
+                if (user.email == email)
+                    return user;
+            }
+
+            return null;
+        }
+
         public bool adduser(User user)
         {
             if (getUser(user.username) != null)
