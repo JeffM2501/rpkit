@@ -4,6 +4,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Net.Mail;
+using System.Web;
 using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Serialization;
@@ -32,11 +33,11 @@ namespace RPServer
 
     public class Templates
     {
-        string readFile(string path, string file)
+        string readFile(string file)
         {
             string ret = null;
 
-            FileInfo f = new FileInfo(path + file);
+            FileInfo f = new FileInfo(templateDir + file);
             if (f.Exists)
             {
                 StreamReader stream = f.OpenText();
@@ -49,16 +50,23 @@ namespace RPServer
         public Templates(string dir)
         {
             // load em up
-            httpHeader = readFile(dir, "httpHeader.html");
-            httpFooter = readFile(dir, "httpFooter.html");
+            templateDir = dir;
 
-            mainPage = readFile(dir, "mainPage.html");
-            newUserSetup = readFile(dir, "newUserSetup.html");
-            newUserError = readFile(dir, "newUserError.html");
-            newUserComplete = readFile(dir, "newUserComplete.html");
-            newUserVerified = readFile(dir, "newUserVerified.html");
+            httpHeader = readFile("httpHeader.html");
+            httpFooter = readFile("httpFooter.html");
 
-            mail = readFile(dir, "mail.txt");
+            mainPage = readFile("mainPage.html");
+            newUserSetup = readFile("newUserSetup.html");
+            newUserError = readFile("newUserError.html");
+            newUserComplete = readFile("newUserComplete.html");
+            newUserVerified = readFile("newUserVerified.html");
+
+            mail = readFile("mail.txt");
+        }
+
+        public string get ( string file )
+        {
+            return readFile(file+".html");
         }
 
         public bool valid()
@@ -82,6 +90,8 @@ namespace RPServer
 
             return true;
         }
+
+        private string templateDir = string.Empty;
 
         public string httpHeader = string.Empty;
         public string httpFooter = string.Empty;
@@ -117,7 +127,32 @@ namespace RPServer
 
                     arguments.Add(name,value);
                 }
-             }
+            }
+            if (request.HttpMethod == "POST" && request.HasEntityBody)
+            {
+                StreamReader reader = new System.IO.StreamReader(request.InputStream, request.ContentEncoding);
+                string body = reader.ReadToEnd();
+                reader.Close();
+                request.InputStream.Close();
+
+                string[] pairs = body.Split('&');
+
+                foreach (string s in pairs)
+                {
+                    string[] item = s.Split('=');
+
+                    string name = item[0];
+                    string value = string.Empty;
+
+                    if (item.Length > 1 && item[1].Length > 0)
+                        value = HttpUtility.UrlDecode(item[1]);
+
+                    if (!arguments.ContainsKey(name))
+                        arguments.Add(name, value);
+                    else
+                        arguments[name] = value;
+                }
+            }
         }
 
         public string getArg ( string key )
@@ -130,7 +165,6 @@ namespace RPServer
         public HttpListenerContext context;
         Dictionary<string,string>   arguments = new Dictionary<string,string>();
     }
-
 
     public class BatchMailer
     {
@@ -190,6 +224,12 @@ namespace RPServer
         }
     }
 
+    public class AuthedSession
+    {
+        public User user;
+        public DateTime lastTime;
+    }
+
     public class Server
     {
         public Setup setup = new Setup();
@@ -197,7 +237,7 @@ namespace RPServer
 
         BatchMailer mailer;
 
-        List<string> authedSessions = new List<string>();
+        Dictionary<string, AuthedSession> authedSessions = new Dictionary<string, AuthedSession>();
 
         Usermanager users = new Usermanager();
 
@@ -225,7 +265,7 @@ namespace RPServer
             if(templates.httpHeader != null)
             {
                 connection.context.Response.ContentType = "text/html";
-                string header = templates.httpHeader.Replace("[TITLE]", title);
+                string header = templates.get("httpHeader").Replace("[TITLE]", title);
                 writeToContext(header, connection.context);
             }
             else
@@ -235,7 +275,7 @@ namespace RPServer
         private void writeHTTPFooter(Connection connection)
         {
             if (templates.httpFooter != null)
-                writeToContext(templates.httpFooter, connection.context);
+                writeToContext(templates.get("httpFooter"), connection.context);
         }
 
         private bool fatalError ( string error, Connection connection )
@@ -325,7 +365,12 @@ namespace RPServer
 
         public void update ( )
         {
+            DateTime now = DateTime.Now;
 
+           // foreach (AuthedSession s in authedSessions)
+            {
+
+            }
         }
 
         private bool fieldValid ( string text )
@@ -333,6 +378,26 @@ namespace RPServer
             if (text == null || text.Length == 0)
                 return false;
             return true;
+        }
+
+        private string hashPassword ( string password )
+        {
+            MD5 md5 = MD5.Create();
+            md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(password + setup.md5Salt));
+
+            return md5.GetHashCode().ToString();
+        }
+
+        private string getSessionCookie ( )
+        {
+            Random rng = new Random();
+
+            string key = string.Empty;
+
+            for (int i = 0; i < 5; i++)
+                key += rng.Next().ToString();
+
+            return key;
         }
 
         private void newUser ( Connection connection )
@@ -347,6 +412,14 @@ namespace RPServer
                 string password2 = connection.getArg("password2");
                 string email = connection.getArg("email");
                 string email2 = connection.getArg("email2");
+
+                string agree = connection.getArg("agree");
+
+                if (!fieldValid(agree) || agree != "on")
+                {
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "You need to agree to the terms"), connection);
+                    return;
+                }
 
                 // verify the info
                 if (!fieldValid(username) || !fieldValid(password) || !fieldValid(email) )
@@ -394,25 +467,19 @@ namespace RPServer
                 // all is good, make a user and have them verify
                 Random rng = new Random();
 
-                string verifyKey = string.Empty;
-
-                for (int i = 0; i < 5; i++)
-                    verifyKey += rng.Next().ToString();
+                string verifyKey = getSessionCookie();
 
                 User user = new User();
                 user.email = email;
                 user.username = username;
                 user.verified = false;
                 user.emailKey = verifyKey;
-                MD5 md5 = MD5.Create();
-                md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(password + setup.md5Salt));
-
-                user.passwordHash = md5.GetHashCode().ToString();
+                user.passwordHash = hashPassword(password);
 
                 users.adduser(user);
                 users.saveUser(user, usersDir);
 
-                string verifyLink = publicURL + "?action=adduser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
+                string verifyLink = publicURL + "?action=newuser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
 
                 string body = fillTemplate(templates.mail,"USER", username);
                 body = body.Replace("[VERIFY]", verifyLink);
@@ -426,7 +493,7 @@ namespace RPServer
 
                 mailer.add(message);
 
-                writeToContext(templates.newUserComplete,connection);
+                writeToContext(templates.get("newUserComplete"),connection);
             }
             else if ( mode == "verify" )
             {
@@ -443,17 +510,22 @@ namespace RPServer
                 }
 
                 if ( user.emailKey == token )
-                    writeToContext(fillTemplate(templates.newUserVerified,"URL", publicURL), connection);
+                    writeToContext(fillTemplate(templates.get("newUserVerified"),"URL", publicURL), connection);
                 else
                     writeToContext(fillTemplate(templates.newUserError,"ERROR", "Data mismatch!"), connection);
             }
             else // new user form
-                writeToContext(fillTemplate(templates.newUserSetup), connection);
+                writeToContext(fillTemplate(templates.get("newUserSetup")), connection);
 
             writeHTTPFooter(connection);
         }
 
-        private void login( Connection connection, string session )
+        private void generateHomepage(Connection connection, AuthedSession session )
+        {
+            writeToContext(fillTemplate(templates.get("homepage")), connection);
+        }
+
+        private void login( Connection connection )
         {
             writeHTTPHeader(connection);
 
@@ -462,16 +534,57 @@ namespace RPServer
             if (action == "login")
             {
                 // auth
+
+                string username = connection.getArg("username");
+                string password = connection.getArg("password");
+
+                if ( username == string.Empty || password == string.Empty )
+                {
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid Entry"), connection);
+                    return;
+                }
+
+                User user = users.getUser(username);
+                if (user == null)
+                {
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid Username"), connection);
+                    return;
+                }
+
+                if (user.passwordHash != hashPassword(password))
+                {
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid password"), connection);
+                    return;
+                }
+
+                // ok they have authed, give em a session cookie
+
+                string sessionID = getSessionCookie();
+
+                AuthedSession session = new AuthedSession();
+                session.user = user;
+                session.lastTime = DateTime.Now;
+
+                if (authedSessions.ContainsKey(sessionID))
+                    authedSessions[sessionID] = session;
+                else
+                    authedSessions.Add(sessionID, session);
+
+                connection.context.Response.Cookies.Add(new Cookie("session",sessionID));
+
+                generateHomepage(connection,session);
             }
             else                //login page
-                writeToContext(fillTemplate(templates.mainPage), connection);
+                writeToContext(fillTemplate(templates.get("mainPage")), connection);
 
             writeHTTPFooter(connection);
         }
 
-        private bool handleAuthedQuery( Connection connection, string session )
+        private bool handleAuthedQuery( Connection connection, string sessionID )
         {
             writeHTTPHeader(connection);
+
+            AuthedSession session = authedSessions[sessionID];
 
             string action = connection.getArg("action");
 
@@ -481,8 +594,11 @@ namespace RPServer
                 writeHTTPFooter(connection);
                 return true;
             }
+            else
+            {
+                generateHomepage(connection, session);
+            }
 
-            writeToContext("Hello World!", connection);
             writeHTTPFooter(connection);
             return false;
         }
@@ -492,7 +608,12 @@ namespace RPServer
             if (session == string.Empty)
                 return false;
 
-            return authedSessions.Contains(session);
+            if (authedSessions.ContainsKey(session))
+            {
+                authedSessions[session].lastTime = DateTime.Now;
+                return true;
+            }
+            return false;
         }
 
         private bool handleAppQuery ( Connection connection )
@@ -513,13 +634,6 @@ namespace RPServer
             if (connection.getArg("type") == "rpkit")
                 return handleAppQuery(connection);
 
-            // new user dosnt' need a session
-            if (action == "newuser")
-            {
-                newUser(connection);
-                return false;
-            }
-            
             // see if we have a session cookie
             foreach (Cookie c in context.Request.Cookies)
             {
@@ -530,7 +644,14 @@ namespace RPServer
             // if there is no session, 
             if (!isAuthedSession(session))
             {
-                login(connection,session);
+                // new user dosnt' need a session
+                if (action == "newuser")
+                {
+                    newUser(connection);
+                    return false;
+                }
+
+                login(connection);
                 return false;
             }
 
