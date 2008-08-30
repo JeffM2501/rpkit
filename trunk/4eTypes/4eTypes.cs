@@ -142,7 +142,10 @@ namespace FourETypes
     {
         public List<MonsterInstance> monsters = new List<MonsterInstance>();
         public string name = string.Empty;
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         public bool dirty = false;
+
         public string code = string.Empty;
 
         public void addMonster ( Monster m )
@@ -162,5 +165,27 @@ namespace FourETypes
             monsters.RemoveAt(index);
             dirty = true;
         }
+    }
+
+    public class Game
+    {
+        int GUID;
+        string name;
+        List<Player> players;
+    }
+
+    public class Campaign
+    {
+        int GUID;
+        string name;
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        MonsterDB monsterDB;
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        List<Encounter> encounters;
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        List<Game> games;
     }
 }
