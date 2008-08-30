@@ -46,23 +46,31 @@ namespace RPUsers
             // flush existing users
             users.Clear();
 
+            XmlSerializer userXML = new XmlSerializer(typeof(User));
+
             if (dir.Exists)
             {
-                foreach (FileInfo f in dir.GetFiles() )
+                foreach (DirectoryInfo d in dir.GetDirectories())
                 {
-                    XmlSerializer xml = new XmlSerializer(typeof(User));
+                    string GUID = d.Name;
 
-                    FileStream fs = f.OpenRead();
-                    StreamReader file = new StreamReader(fs);
+                    // check for the user file
+                    FileInfo f = new FileInfo(Path.Combine(d.FullName, "user.xml"));
+                    if (f.Exists)
+                    {
+                        FileStream fs = f.OpenRead();
+                        StreamReader file = new StreamReader(fs);
 
-                    User newUser = (User)xml.Deserialize(file);
-                    file.Close();
-                    fs.Close();
+                        User newUser = (User)userXML.Deserialize(file);
+                        file.Close();
+                        fs.Close();
 
-                    if ( newUser.ToString() + ".xml" != f.Name) // verify that this is cool
-                        f.Delete();// it's a bad user, flush it
-                    else
-                        users.Add(newUser);
+                        if (newUser.GUID.ToString() != GUID) // verify that this is cool
+                            d.Delete(true);
+                        else
+                            users.Add(newUser);
+                    }
+
                 }
             }
 
