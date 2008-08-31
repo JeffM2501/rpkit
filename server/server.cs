@@ -29,6 +29,7 @@ namespace RPServer
         public string smtpUsername = string.Empty;
         public string smtpPassword = string.Empty;
         public bool useSSL = false;
+        public bool log = false;
     }
 
     public class Templates
@@ -128,6 +129,7 @@ namespace RPServer
                     arguments.Add(name,value);
                 }
             }
+
             if (request.HttpMethod == "POST" && request.HasEntityBody)
             {
                 StreamReader reader = new System.IO.StreamReader(request.InputStream, request.ContentEncoding);
@@ -151,6 +153,9 @@ namespace RPServer
                         arguments.Add(name, value);
                     else
                         arguments[name] = value;
+
+                    Console.WriteLine("argument " + name + " : " + value);
+
                 }
             }
         }
@@ -172,6 +177,7 @@ namespace RPServer
         SmtpClient mailer;
 
         bool active = false;
+        bool log;
 
         public BatchMailer(Setup setup)
         {
@@ -188,11 +194,16 @@ namespace RPServer
             }
 
             mailer.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
+
+            log = setup.log;
         }
 
         public static void SendCompletedCallback(object sender, AsyncCompletedEventArgs e)
         {
             BatchMailer m = (BatchMailer)e.UserState;
+
+            if (m.log)
+                Console.WriteLine("Completed message to " + m.messages[0].To.ToString());
 
             m.active = false;
             m.messages.Remove(m.messages[0]);
@@ -201,11 +212,14 @@ namespace RPServer
 
         public void add(MailMessage messge)
         {
-            if (messge != null)
+           if (messge != null)
                 messages.Add(messge);
 
             if (!active && messages.Count > 0)
             {
+                if (log)
+                    Console.WriteLine("Sending message to " + messge.To.ToString());
+
                 try
                 {
                     mailer.SendAsync(messages[0], this);
@@ -352,6 +366,12 @@ namespace RPServer
                 }
             }
 
+            if (args.Length > 1)
+            {
+                if (args[1] == "-consolelog")
+                    setup.log = true;
+            }
+
             // load all the databases
             if(setup.hosts.Count > 0)
                 publicURL = setup.hosts[0];
@@ -407,6 +427,9 @@ namespace RPServer
             string mode = connection.getArg("mode");
             if ( mode == "adduser")
             {
+                if (setup.log)
+                    Console.WriteLine("adduser");
+
                 string username = connection.getArg("username");
                 string password = connection.getArg("password");
                 string password2 = connection.getArg("password2");
@@ -493,9 +516,12 @@ namespace RPServer
 
                 mailer.add(message);
 
+                if (setup.log)
+                    Console.WriteLine("added user " + user.username);
+
                 writeToContext(templates.get("newUserComplete"),connection);
             }
-            else if ( mode == "verify" )
+            else if (mode == "verify")
             {
                 // this has to come form the verifyer
 
@@ -505,17 +531,26 @@ namespace RPServer
                 User user = users.getUser(int.Parse(GUID));
                 if (user == null || user.verified || token.Length <= 0)
                 {
-                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Invalid Request!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid Request!"), connection);
                     return;
                 }
 
-                if ( user.emailKey == token )
-                    writeToContext(fillTemplate(templates.get("newUserVerified"),"URL", publicURL), connection);
+                if (user.emailKey == token)
+                    writeToContext(fillTemplate(templates.get("newUserVerified"), "URL", publicURL), connection);
                 else
-                    writeToContext(fillTemplate(templates.newUserError,"ERROR", "Data mismatch!"), connection);
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "Data mismatch!"), connection);
+
+                if (setup.log)
+                    Console.WriteLine("verify use " + user.username);
+
             }
             else // new user form
+            {
+                if (setup.log)
+                    Console.WriteLine("geneate new user form");
+
                 writeToContext(fillTemplate(templates.get("newUserSetup")), connection);
+            }
 
             writeHTTPFooter(connection);
         }
@@ -625,6 +660,7 @@ namespace RPServer
         public bool handleURL ( HttpListenerContext context )
         {
             Connection connection = new Connection(context);
+
             if (!templates.valid())
                 return fatalError("Templates not valid",connection);
 
@@ -633,6 +669,13 @@ namespace RPServer
             string action = connection.getArg("action");
             if (connection.getArg("type") == "rpkit")
                 return handleAppQuery(connection);
+
+            if (setup.log)
+            {
+                Console.WriteLine("new request URL " + context.Request.Url.ToString());
+                Console.WriteLine("new request action = " + action);
+            }
+
 
             // see if we have a session cookie
             foreach (Cookie c in context.Request.Cookies)
