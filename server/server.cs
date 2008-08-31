@@ -130,10 +130,18 @@ namespace RPServer
                 }
             }
 
-            if (request.HttpMethod == "POST" && request.HasEntityBody)
+            if (request.HttpMethod == "POST")
             {
                 StreamReader reader = new System.IO.StreamReader(request.InputStream, request.ContentEncoding);
                 string body = reader.ReadToEnd();
+
+                while (body.Length < request.ContentLength64) // go untill we have the entire thing
+                {
+                    body += reader.ReadToEnd();
+                    Thread.Sleep(100);
+                    Console.WriteLine("readloop body read " + body.Length.ToString() + " : expected size " + request.ContentLength64.ToString() + "request flag " + request.HasEntityBody.ToString());
+                }
+
                 reader.Close();
                 request.InputStream.Close();
 
