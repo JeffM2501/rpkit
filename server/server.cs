@@ -30,6 +30,7 @@ namespace RPServer
         public string smtpPassword = string.Empty;
         public bool useSSL = false;
         public bool log = false;
+        public string favicon = string.Empty;
     }
 
     public class Templates
@@ -357,6 +358,7 @@ namespace RPServer
                 setup.serviceName = "RPKit";
                 setup.md5Salt = "adsfasdfjasl;dfj234q23412234124v";
                 setup.smtpServer = "localhost";
+                setup.favicon = "./data/favicon.icn";
 
                 // dirs
                 setup.userDir = "./users/";
@@ -373,6 +375,9 @@ namespace RPServer
                     fs.Close();
                 }
             }
+
+            if (setup.favicon.Length < 1)
+                setup.favicon = "./data/favicon.ico";
 
             if (args.Length > 1)
             {
@@ -665,8 +670,34 @@ namespace RPServer
             return false;
         }
 
+        private bool handleCommonTasks ( HttpListenerContext context )
+        {
+            if (context.Request.Url.AbsolutePath.Contains("favicon.ico"))
+            {
+                // return he icon
+                FileInfo icon = new FileInfo(setup.favicon);
+                if (icon.Exists)
+                {
+                    context.Response.ContentType = "image/vnd.microsoft.icon";
+
+                    FileStream fs = icon.OpenRead();
+                    StreamReader instream = new StreamReader(fs);
+                    writeToContext(instream.ReadToEnd(),context);
+                    instream.Close();
+                    fs.Close();
+                }
+                else
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return true;
+            }
+            return false;
+        }
+
         public bool handleURL ( HttpListenerContext context )
         {
+            if (handleCommonTasks(context)) // favicon, etc..
+                return false;
+
             Connection connection = new Connection(context);
 
             if (!templates.valid())
