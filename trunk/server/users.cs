@@ -35,6 +35,8 @@ namespace RPUsers
         public bool verified = false;
 
         public int GUID = -1;
+
+        List<Player> players = new List<Player>();
     }
 
     public class Usermanager
@@ -118,9 +120,6 @@ namespace RPUsers
             user.verified = false;
 
             users.Add(user);
-
-            //write user
-
           
             return true;
         }
@@ -130,7 +129,11 @@ namespace RPUsers
             if (!dir.Exists)
                 return;
 
-            FileInfo f = new FileInfo(Path.Combine(dir.FullName, user.GUID.ToString() + ".xml"));
+            DirectoryInfo userDir = new DirectoryInfo(Path.Combine(dir.FullName, user.GUID.ToString()));
+            if (!userDir.Exists)
+                userDir.Create();
+
+            FileInfo f = new FileInfo(Path.Combine(userDir.FullName, "user.xml"));
 
             FileStream fs = f.OpenWrite();
             StreamWriter file = new StreamWriter(fs);
@@ -147,13 +150,13 @@ namespace RPUsers
             if (!dir.Exists)
                 return false;
 
-            FileInfo f = new FileInfo(dir.FullName + "/" + user.GUID.ToString() + ".xml");
+            // blow out the dir
+            DirectoryInfo userDir = new DirectoryInfo(Path.Combine(dir.FullName, user.GUID.ToString()));
+            if (userDir.Exists)
+                userDir.Delete(true);
 
-            if (f.Exists)
-                f.Delete();
-
-            if (!users.Contains(user))
-                return false;
+            // purge games/players/etc..
+            // that others may be using before we kill it.
 
             users.Remove(user);
 
