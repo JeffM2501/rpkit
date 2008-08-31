@@ -26,20 +26,32 @@ namespace server
 
             httpd.Start();
 
-            AsyncCallback callback = new AsyncCallback(HTTPCallback);
+            bool async = true;
 
-            IAsyncResult result = httpd.BeginGetContext(callback, httpd);
-
-            while (runServer)
+            if (!async)
             {
-                server.update();
-
-                Thread.Sleep(100);
-
-                if (result.IsCompleted)
-                    result = httpd.BeginGetContext(callback, httpd);                      
+                while (!server.handleURL(httpd.GetContext()))
+                {
+                    httpd.GetContext().Response.OutputStream.Close();
+                   server.update();
+                }
             }
+            else
+            {
+                AsyncCallback callback = new AsyncCallback(HTTPCallback);
 
+                IAsyncResult result = httpd.BeginGetContext(callback, httpd);
+
+                while (runServer)
+                {
+                    server.update();
+
+                    Thread.Sleep(100);
+
+                    if (result.IsCompleted)
+                        result = httpd.BeginGetContext(callback, httpd);                      
+                }
+            }
             httpd.Close();
         }
 
@@ -52,7 +64,7 @@ namespace server
             if (server.handleURL(context))
                 runServer = false;
 
-            context.Response.Close();
+            context.Response.OutputStream.Close();
         }
     }
 }
