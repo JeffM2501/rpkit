@@ -262,7 +262,7 @@ namespace RPServer
 
         Dictionary<string, AuthedSession> authedSessions = new Dictionary<string, AuthedSession>();
 
-        Usermanager users = new Usermanager();
+        Usermanager users;
 
         DirectoryInfo usersDir;
 
@@ -390,7 +390,9 @@ namespace RPServer
                 publicURL = setup.hosts[0];
 
             usersDir = new DirectoryInfo(setup.userDir);
-            users.load(usersDir);
+
+            users = new Usermanager(usersDir);
+
             templates = new Templates(setup.templateDir);
 
             mailer = new BatchMailer(setup);
@@ -415,8 +417,9 @@ namespace RPServer
 
         private string hashPassword ( string password )
         {
+            string saltedPass = new string(password + setup.md5Salt);
             MD5 md5 = MD5.Create();
-            md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(password + setup.md5Salt));
+            md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(saltedPass));
 
             return md5.GetHashCode().ToString();
         }
@@ -513,7 +516,7 @@ namespace RPServer
                 user.passwordHash = hashPassword(password);
 
                 users.adduser(user);
-                users.saveUser(user, usersDir);
+                users.saveUser(user);
 
                 string verifyLink = publicURL + "?action=newuser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
 
@@ -553,8 +556,11 @@ namespace RPServer
                 else
                     writeToContext(fillTemplate(templates.newUserError, "ERROR", "Data mismatch!"), connection);
 
+                user.verified = true;
                 if (setup.log)
                     Console.WriteLine("verify use " + user.username);
+
+                users.saveUser(user);
 
             }
             else // new user form
@@ -599,6 +605,13 @@ namespace RPServer
                     return;
                 }
 
+                if (!user.verified)
+                {
+                    writeToContext(fillTemplate(templates.newUserError, "ERROR", "Unverified user"), connection);
+                    return;
+                }
+
+
                 if (user.passwordHash != hashPassword(password))
                 {
                     writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid password"), connection);
@@ -618,7 +631,8 @@ namespace RPServer
                 else
                     authedSessions.Add(sessionID, session);
 
-                connection.context.Response.Cookies.Add(new Cookie("session",sessionID));
+                Cookie cookie = new Cookie("session", sessionID, "/", connection.context.Request.Url.Host.ToString());
+                connection.context.Response.Cookies.Add(cookie);
 
                 generateHomepage(connection,session);
             }
@@ -678,7 +692,7 @@ namespace RPServer
                 FileInfo icon = new FileInfo(setup.favicon);
                 if (icon.Exists)
                 {
-                    context.Response.ContentType = "image/vnd.microsoft.icon";
+                    context.Response.ContentType = "image/x-icon";
 
                     FileStream fs = icon.OpenRead();
                     StreamReader instream = new StreamReader(fs);

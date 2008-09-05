@@ -42,17 +42,24 @@ namespace RPUsers
     public class Usermanager
     {
         private List<User> users = new List<User>();
+        DirectoryInfo rootDir;
 
-        public void load ( DirectoryInfo dir )
+        public Usermanager ( DirectoryInfo dir )
+        {
+            rootDir = dir;
+            load();
+        }
+
+        public void load ( )
         {
             // flush existing users
             users.Clear();
 
             XmlSerializer userXML = new XmlSerializer(typeof(User));
 
-            if (dir.Exists)
+            if (rootDir.Exists)
             {
-                foreach (DirectoryInfo d in dir.GetDirectories())
+                foreach (DirectoryInfo d in rootDir.GetDirectories())
                 {
                     string GUID = d.Name;
 
@@ -124,12 +131,12 @@ namespace RPUsers
             return true;
         }
 
-        public void saveUser ( User user, DirectoryInfo dir )
+        public void saveUser ( User user )
         {
-            if (!dir.Exists)
+            if (!rootDir.Exists)
                 return;
 
-            DirectoryInfo userDir = new DirectoryInfo(Path.Combine(dir.FullName, user.GUID.ToString()));
+            DirectoryInfo userDir = new DirectoryInfo(Path.Combine(rootDir.FullName, user.GUID.ToString()));
             if (!userDir.Exists)
                 userDir.Create();
 
@@ -145,13 +152,13 @@ namespace RPUsers
             fs.Close();
         }
 
-        public bool removeUser ( User user, DirectoryInfo dir )
+        public bool removeUser ( User user )
         {
-            if (!dir.Exists)
+            if (!rootDir.Exists)
                 return false;
 
             // blow out the dir
-            DirectoryInfo userDir = new DirectoryInfo(Path.Combine(dir.FullName, user.GUID.ToString()));
+            DirectoryInfo userDir = new DirectoryInfo(Path.Combine(rootDir.FullName, user.GUID.ToString()));
             if (userDir.Exists)
                 userDir.Delete(true);
 
