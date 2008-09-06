@@ -34,9 +34,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HTTPConnection.cs" />
+    <Compile Include="mail.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="server.cs" />
+    <Compile Include="templates.cs" />
     <Compile Include="users.cs" />
   </ItemGroup>
   <ItemGroup>

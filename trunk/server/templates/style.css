@@ -10,7 +10,7 @@ html, body { height: 95%; }
 width: 307px;
 height: 81px;
 margin-top: 13px;
-background-image: url(http://www.opencombat.net/rpkit/images/rpkit_logo.png);
+background-image: url(images/rpkit_logo.png);
 background-repeat: no-repeat;
 float:none;
 }
@@ -18,7 +18,7 @@ float:none;
 #topBarImg{
 width: 100%;
 height: 13px;
-background-image: url(http://www.opencombat.net/rpkit/images/small_blue_bar.png);
+background-image: url(images/small_blue_bar.png);
 background-repeat: repeat-x;
 float: none;
 }
