@@ -1,4 +1,4 @@
 Thanks for registering with [SERVICE] at [URL].
 You are being sent this message because the user [USER] used this e-mail address to sign up for a new account.
 
-To activate the account please click this link <a href="[VERIFY]">[VERIFY]</a> to verify your e-mail address.
+To activate the account please click this link [VERIFY] to verify your e-mail address.
