@@ -19,6 +19,24 @@ using Mailer;
 
 namespace RPServer
 {
+    public class MimeTypePair
+    {
+        public string key;
+        public string value;
+
+        public MimeTypePair()
+        {
+            key = string.Empty;
+            value = string.Empty;
+        }
+
+        public MimeTypePair ( string k, string v)
+        {
+            key = k;
+            value = v;
+        }
+    }
+
     public class Setup
     {
         public List<string> hosts = new List<string>();
@@ -34,8 +52,9 @@ namespace RPServer
         public bool useSSL = false;
         public bool log = false;
         public string favicon = string.Empty;
-        public Dictionary<string,string> mimeTypes = new Dictionary<string,string>();
-    }
+        public List<MimeTypePair> mimeTypes = new List<MimeTypePair>();
+       // public Dictionary<string, string> mimeTypes = new Dictionary<string, string>();
+   }
 
     public class AuthedSession
     {
@@ -60,36 +79,42 @@ namespace RPServer
 
         private bool isValidTransferFile ( FileInfo file )
         {
-            if (!file.Exists || file.Extension.ToLower() == "ptpl")
+            string ext = file.Extension.Remove(0, 1).ToLower();
+
+            if (!file.Exists || ext == "ptpl")
                 return false;
 
-            return setup.mimeTypes.ContainsKey(file.Extension.ToLower());
-        }
-
-        private bool isTextFile ( FileInfo file )
-        {
-            if (file.Extension == "txt")
-                return true;
-            if (file.Extension == "html")
-                return true;
-            if (file.Extension == "htm")
-                return true;
-            if (file.Extension == "text")
-                return true;
+            foreach (MimeTypePair m in setup.mimeTypes)
+            {
+                if (m.key == ext)
+                    return true;
+            }
 
             return false;
         }
 
+        private bool isTextFile ( FileInfo file )
+        {
+            return getMimeType(file).Contains("text");
+        }
+
         private string getMimeType(FileInfo file)
         {
-            string ext = file.Extension.ToLower();
+            string ext = file.Extension.Remove(0, 1).ToLower();
 
-            if (setup.mimeTypes.ContainsKey(ext))
-                return setup.mimeTypes[ext];
+            string catchall = string.Empty;
+            foreach (MimeTypePair m in setup.mimeTypes)
+            {
+                if (m.key == ext)
+                    return m.value;
 
-            if (setup.mimeTypes.ContainsKey("*"))
-                return setup.mimeTypes["*"];
-         
+                if (m.key == "*")
+                    catchall = m.value;
+            }
+
+            if (catchall != string.Empty)
+                return catchall;
+
             return "application/octet-stream";
         }
 
@@ -188,13 +213,13 @@ namespace RPServer
 
             if (setup.mimeTypes.Count == 0)
             {
-                setup.mimeTypes.Add("html","text/html");
-                setup.mimeTypes.Add("htm","text/html");
-                setup.mimeTypes.Add("txt","text/plain");
-                setup.mimeTypes.Add("css","text/css");
-                setup.mimeTypes.Add("png","image/png");
-                setup.mimeTypes.Add("ico","image/vnd.microsoft.icon");
-                setup.mimeTypes.Add("*","application/octet-stream");
+                setup.mimeTypes.Add(new MimeTypePair("html","text/html"));
+                setup.mimeTypes.Add(new MimeTypePair("htm","text/html"));
+                setup.mimeTypes.Add(new MimeTypePair("txt","text/plain"));
+                setup.mimeTypes.Add(new MimeTypePair("css","text/css"));
+                setup.mimeTypes.Add(new MimeTypePair("png","image/png"));
+                setup.mimeTypes.Add(new MimeTypePair("ico","image/vnd.microsoft.icon"));
+                setup.mimeTypes.Add(new MimeTypePair("*","application/octet-stream"));
             }
 
             if (args.Length > 1)
@@ -213,7 +238,7 @@ namespace RPServer
                 if (conf.Exists)
                 {
                     XmlSerializer xml = new XmlSerializer(typeof(Setup));
-
+         
                     FileStream fs = conf.OpenWrite();
                     StreamWriter file = new StreamWriter(fs);
 
@@ -527,10 +552,12 @@ namespace RPServer
             if (connection.hasArgs())
                 return false;
 
-            string absPath = connection.context.Request.Url.AbsolutePath;
+            string absPath = string.Copy(connection.context.Request.Url.AbsolutePath);
 
             if (absPath.Length == 0 || absPath == "/")
                 return false; // main page
+
+            absPath = absPath.Remove(0,1);
 
             if (absPath.Contains("favicon.ico"))
             {
