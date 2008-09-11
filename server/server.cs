@@ -179,18 +179,30 @@ namespace RPServer
             bool saveConfig = false;
 
             FileInfo conf = new FileInfo(configFile);
+
+            bool confRead = false;
+
             if ( conf.Exists )
             {
                 XmlSerializer xml = new XmlSerializer(typeof(Setup));
 
                 FileStream fs = conf.OpenRead();
                 StreamReader file = new StreamReader(fs);
+                try
+                {
+                    setup = (Setup)xml.Deserialize(file);
+                    confRead = true;
+                }
+                catch (System.Exception e)
+                {
+                    Console.WriteLine("Error reading config " + e.ToString());
+                }
 
-                setup = (Setup)xml.Deserialize(file);
                 file.Close();
                 fs.Close();
             }
-            else
+            
+            if (!confRead)
             {
                 // default setups?
                 setup.hosts.Add("http://localhost:88/");
@@ -202,7 +214,6 @@ namespace RPServer
                
                 // dirs
                 setup.userDir = "./users/";
-
 
                 if (argConf.Length > 0)// try to save out the conf if they wanted one
                     saveConfig = true;
@@ -232,20 +243,14 @@ namespace RPServer
 
             if (saveConfig)
             {
-                if (!conf.Exists)
-                  conf.Create();
+                XmlSerializer xml = new XmlSerializer(typeof(Setup));
+     
+                FileStream fs = conf.OpenWrite();
+                StreamWriter file = new StreamWriter(fs);
 
-                if (conf.Exists)
-                {
-                    XmlSerializer xml = new XmlSerializer(typeof(Setup));
-         
-                    FileStream fs = conf.OpenWrite();
-                    StreamWriter file = new StreamWriter(fs);
-
-                    xml.Serialize(file, setup);
-                    file.Close();
-                    fs.Close();
-                }
+                xml.Serialize(file, setup);
+                file.Close();
+                fs.Close();
             }
 
             // load all the databases
@@ -299,6 +304,104 @@ namespace RPServer
             return key;
         }
 
+        private string getNewPass()
+        {
+            return new Random().Next().ToString();
+        }
+
+        private void mailUserVerifyCode ( User user, bool resetPas )
+        {
+            string verifyKey = getSessionCookie();
+
+            user.verified = false;
+            user.emailKey = verifyKey;
+
+            string verifyLink = publicURL + "?action=newuser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
+            if (resetPas)
+                verifyLink += "&resetpass=1";
+
+            string body = fillTemplate(templates.mail, "USER", user.username);
+            body = body.Replace("[VERIFY]", verifyLink);
+
+            MailAddress from = new MailAddress(setup.replyEmail);
+            MailAddress to = new MailAddress(user.email);
+
+            MailMessage message = new MailMessage(from, to);
+            message.Subject = "Registration with " + setup.serviceName + "(" + publicURL + ")";
+            message.Body = body;
+
+            mailer.add(message);
+        }
+        
+        private void passwordRest ( HTTPConnection connection )
+        {
+            writeHTTPHeader(connection);
+            string username = connection.getArg("username");
+            string email = connection.getArg("email");
+
+            string error = string.Empty;
+            if (username.Length == 0 || email.Length == 0)
+                error = "You must enter a valid username and email address";
+
+            User user = users.getUser(username);
+            if (user == null)
+                error = "Invalid username";
+
+            if (user.email != email)
+                error = "Invalid e-mail";
+
+            if (error == string.Empty)
+            {
+                connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", error));
+                writeHTTPFooter(connection);
+                return;
+            }
+            else
+                connection.writeToContext(fillTemplate(templates.get("generalMessage"), "MESSAGE","Your password reset has been processed and has been sent to your email"));
+
+            mailUserVerifyCode(user,true);
+
+            writeHTTPFooter(connection);
+        }
+
+        private string checkNewUserInput ( HTTPConnection connection )
+        {
+            string username = connection.getArg("username");
+            string password = connection.getArg("password");
+            string email = connection.getArg("email");
+
+            string password2 = connection.getArg("password2");
+            string email2 = connection.getArg("email2");
+            string agree = connection.getArg("agree");
+
+            if (!fieldValid(agree) || agree != "on")
+                return "You need to agree to the terms";
+
+            // verify the info
+            if (!fieldValid(username) || !fieldValid(password) || !fieldValid(email))
+                return "Required info was missing!";
+
+            if (users.getUser(username) != null)
+                return "Username is taken!";
+
+            if (users.getUserByEmail(email) != null)
+                return "E-mail is used by another user!";
+
+            if (password != password2)
+                return "Passwords do not match!";
+
+            if (password.Length < 6)
+                return "Passwords too short!";
+
+            if (!email.Contains("@") || !email.Contains("."))
+                return "Invalid E-mail!";
+
+            if (email != email2)
+                return "E-Mail does not match!";
+
+            return string.Empty;
+        }
+
         private void newUser ( HTTPConnection connection )
         {
             writeHTTPHeader(connection);
@@ -309,91 +412,31 @@ namespace RPServer
                 if (setup.log)
                     Console.WriteLine("adduser");
 
+                string error = checkNewUserInput(connection);
+
+                if (error != string.Empty)
+                {
+                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", error));
+                    writeHTTPFooter(connection);
+                    return;
+                }
+
                 string username = connection.getArg("username");
                 string password = connection.getArg("password");
-                string password2 = connection.getArg("password2");
                 string email = connection.getArg("email");
-                string email2 = connection.getArg("email2");
-
-                string agree = connection.getArg("agree");
-
-                if (!fieldValid(agree) || agree != "on")
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "You need to agree to the terms"));
-                    return;
-                }
-
-                // verify the info
-                if (!fieldValid(username) || !fieldValid(password) || !fieldValid(email) )
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Required info was missing!"));
-                    return;
-                }
-
-                if (users.getUser(username) != null)
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Username is taken!"));
-                    return;
-                }
-
-                if (users.getUserByEmail(email) != null)
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "E-mail is used by another user!"));
-                    return;
-                }
-
-                if ( password != password2)
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Passwords do not match!"));
-                    return;
-                }
-
-                if ( password.Length < 6)
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Passwords too short!"));
-                    return;
-                }
-
-                if ( !email.Contains("@") || !email.Contains("."))
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid E-mail!"));
-                    return;
-                }
-
-                if ( email != email2)
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "E-Mail does not match!"));
-                    return;
-                }
-
+                
                 // all is good, make a user and have them verify
                 Random rng = new Random();
-
-                string verifyKey = getSessionCookie();
 
                 User user = new User();
                 user.email = email;
                 user.username = username;
-                user.verified = false;
-                user.emailKey = verifyKey;
                 user.passwordHash = hashPassword(password);
 
                 users.adduser(user);
                 users.saveUser(user);
 
-                string verifyLink = publicURL + "?action=newuser&mode=verify&key=" + verifyKey + "&user=" + user.GUID.ToString();
-
-                string body = fillTemplate(templates.mail,"USER", username);
-                body = body.Replace("[VERIFY]", verifyLink);
-
-                MailAddress from = new MailAddress(setup.replyEmail);
-                MailAddress to = new MailAddress(email);
-
-                MailMessage message = new MailMessage(from, to);
-                message.Subject = "Registration with " + setup.serviceName  + "(" + publicURL + ")"; 
-                message.Body = body;
-
-                mailer.add(message);
+                mailUserVerifyCode(user,false);
 
                 if (setup.log)
                     Console.WriteLine("added user " + user.username);
@@ -407,24 +450,39 @@ namespace RPServer
                 string GUID = connection.getArg("user");
                 string token = connection.getArg("key");
 
+                string error = string.Empty;
+
                 User user = users.getUser(int.Parse(GUID));
                 if (user == null || user.verified || token.Length <= 0)
+                    error = "Invalid Request!";
+
+                if (user.emailKey != token)
+                    error = "Data mismatch!";
+
+                if (error == string.Empty)
                 {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid Request!"));
+                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", error));
+                    writeHTTPFooter(connection);
                     return;
                 }
 
-                if (user.emailKey == token)
-                    connection.writeToContext(fillTemplate(templates.get("newUserVerified"), "URL", publicURL));
-                else
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Data mismatch!"));
-
                 user.verified = true;
+                if (connection.getArg("resetpass") == "1")
+                {
+                    string newPass = getNewPass();
+                    user.passwordHash = hashPassword(newPass);
+
+                    string template = fillTemplate(templates.get("resetPassVerified"), "URL", publicURL);
+                    template = fillTemplate(template, "PASSWORD", newPass);
+                    connection.writeToContext(template);
+                } 
+                else
+                    connection.writeToContext(fillTemplate(templates.get("newUserVerified"), "URL", publicURL));
+
                 if (setup.log)
                     Console.WriteLine("verify use " + user.username);
 
                 users.saveUser(user);
-
             }
             else // new user form
             {
@@ -625,6 +683,11 @@ namespace RPServer
                 if (action == "newuser")
                 {
                     newUser(connection);
+                    return false;
+                }
+                else if (action == "forgotpassword")
+                {
+                    passwordRest(connection);
                     return false;
                 }
 
