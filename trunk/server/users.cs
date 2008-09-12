@@ -79,10 +79,8 @@ namespace RPUsers
                         else
                             users.Add(newUser);
                     }
-
                 }
             }
-
         }
 
         public User getUser ( int GUID )
