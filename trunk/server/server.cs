@@ -53,7 +53,7 @@ namespace RPServer
         public bool log = false;
         public string favicon = string.Empty;
         public List<MimeTypePair> mimeTypes = new List<MimeTypePair>();
-       // public Dictionary<string, string> mimeTypes = new Dictionary<string, string>();
+        public bool verifyEMail = false;
    }
 
     public class AuthedSession
@@ -83,6 +83,9 @@ namespace RPServer
 
             if (!file.Exists || ext == "ptpl")
                 return false;
+
+            if (ext == "thtm")
+                return true;
 
             foreach (MimeTypePair m in setup.mimeTypes)
             {
@@ -136,7 +139,7 @@ namespace RPServer
 
         private void writeAuthHeader(HTTPConnection connection)
         {
-            string header = templates.get("authedHeader");
+            string header = fillTemplate(templates.get("authedHeader"));
 
             string action = connection.getArg("action");
 
@@ -305,11 +308,26 @@ namespace RPServer
 
         private string hashPassword ( string password )
         {
-            string saltedPass = password + setup.md5Salt;
+            string saltedPass = string.Copy(password + setup.md5Salt);
             MD5 md5 = MD5.Create();
-            md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(saltedPass));
+            byte[] data = md5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(saltedPass));
 
-            return md5.GetHashCode().ToString();
+            StringBuilder sBuilder = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+            return sBuilder.ToString();
+        }
+
+        private bool verifyPasswordHash ( string password, string hash )
+        {
+            string passHash = hashPassword(password);
+
+            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+            return comparer.Compare(passHash, hash) == 0;
         }
 
         private string getSessionCookie ( )
@@ -370,7 +388,7 @@ namespace RPServer
             if (user.email != email)
                 error = "Invalid e-mail";
 
-            if (error == string.Empty)
+            if (error != string.Empty)
             {
                 connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", error));
                 writeHTTPFooter(connection);
@@ -380,6 +398,7 @@ namespace RPServer
                 connection.writeToContext(fillTemplate(templates.get("generalMessage"), "MESSAGE","Your password reset has been processed and has been sent to your email"));
 
             mailUserVerifyCode(user,true);
+            users.saveUser(user);
 
             writeHTTPFooter(connection);
         }
@@ -452,16 +471,25 @@ namespace RPServer
                 user.email = email;
                 user.username = username;
                 user.passwordHash = hashPassword(password);
-
                 users.adduser(user);
+
+                if (setup.verifyEMail)
+                {
+                    mailUserVerifyCode(user, false);
+
+                    if (setup.log)
+                        Console.WriteLine("added user " + user.username);
+
+                    connection.writeToContext(templates.get("newUserComplete"));
+                }
+                else
+                {
+                    user.verified = true;
+                    connection.writeToContext(fillTemplate(templates.get("newUserVerified"), "URL", publicURL));
+                }
+
                 users.saveUser(user);
 
-                mailUserVerifyCode(user,false);
-
-                if (setup.log)
-                    Console.WriteLine("added user " + user.username);
-
-                connection.writeToContext(templates.get("newUserComplete"));
             }
             else if (mode == "verify")
             {
@@ -479,7 +507,7 @@ namespace RPServer
                 if (user.emailKey != token)
                     error = "Data mismatch!";
 
-                if (error == string.Empty)
+                if (error != string.Empty)
                 {
                     connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", error));
                     writeHTTPFooter(connection);
@@ -517,7 +545,6 @@ namespace RPServer
 
         private void login( HTTPConnection connection )
         {
-            writeHTTPHeader(connection);
 
             string action = connection.getArg("action");
 
@@ -528,30 +555,24 @@ namespace RPServer
                 string username = connection.getArg("username");
                 string password = connection.getArg("password");
 
-                if ( username == string.Empty || password == string.Empty )
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid Entry"));
-                    return;
-                }
+                string error = string.Empty;
+
+                if (username == string.Empty || password == string.Empty)
+                    error = "Invalid Entry";
 
                 User user = users.getUser(username);
                 if (user == null)
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid Username"));
-                    return;
-                }
+                    error = "Invalid Username";
+                else if (!user.verified)
+                    error = "Unverified user";
+                else if (!verifyPasswordHash(password, user.passwordHash))
+                    error = "Invalid password";
 
-                if (!user.verified)
+                if (error != string.Empty)
                 {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Unverified user"));
-                    return;
-                }
-
-
-                if (user.passwordHash != hashPassword(password))
-                {
-                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", "Invalid password"));
-                    return;
+                    writeHTTPHeader(connection);
+                    connection.writeToContext(fillTemplate(templates.newUserError, "ERROR", error));
+                    writeHTTPFooter(connection);
                 }
 
                 // ok they have authed, give em a session cookie
@@ -570,17 +591,24 @@ namespace RPServer
                 Cookie cookie = new Cookie("session", sessionID, "/", connection.context.Request.Url.Host.ToString());
                 connection.context.Response.Cookies.Add(cookie);
 
-                generateHomepage(connection,session);
+                setSessionCookie(connection, sessionID);
+                writeHTTPHeader(connection);
+
+                writeAuthHeader(connection);
+                generateHomepage(connection, session);
             }
             else                //login page
+            {
+                writeHTTPHeader(connection);
                 connection.writeToContext(fillTemplate(templates.get("mainPage")));
+            }
 
             writeHTTPFooter(connection);
         }
 
         private void generateUserPage(HTTPConnection connection, AuthedSession session)
         {
-            connection.writeToContext(fillTemplate(templates.get("homepage")));
+            connection.writeToContext(session.user.username);
         }
 
         private void generateHomepage(HTTPConnection connection, AuthedSession session)
@@ -588,8 +616,16 @@ namespace RPServer
             connection.writeToContext(fillTemplate(templates.get("homepage")));
         }
 
+        private void setSessionCookie ( HTTPConnection connection, string sessionID )
+        {
+            Cookie cookie = new Cookie("session",sessionID.ToString());
+            cookie.Expires = DateTime.Now + new TimeSpan(0,90,0);
+            connection.context.Response.AppendCookie(cookie);
+        }
+
         private bool handleAuthedQuery( HTTPConnection connection, string sessionID )
         {
+            setSessionCookie(connection, sessionID);
             writeHTTPHeader(connection);
             writeAuthHeader(connection);
 
@@ -609,6 +645,7 @@ namespace RPServer
                 generateHomepage(connection, session);
 
             writeHTTPFooter(connection);
+
             return false;
         }
         
@@ -631,7 +668,7 @@ namespace RPServer
             return false;
         }
 
-        private bool handleCommonTasks( HTTPConnection connection )
+        private bool handleCommonTasks( HTTPConnection connection, bool authed )
         {
             if (connection.hasArgs())
                 return false;
@@ -658,9 +695,11 @@ namespace RPServer
             if (isValidTransferFile(file))
             {
                 // get it's mime type and mode
-                if (file.Extension == "thtm")// it's a template parse it.
+                if (file.Extension == ".thtm")// it's a template parse it.
                 {
                     writeHTTPHeader(connection);
+                    if (authed)
+                        writeAuthHeader(connection);
                     connection.writeToContext(fillTemplate(templates.get(file)));
                     writeHTTPFooter(connection);
                 }
@@ -676,9 +715,6 @@ namespace RPServer
         public bool handleURL ( HttpListenerContext context )
         {
             HTTPConnection connection = new HTTPConnection(context);
-
-            if (handleCommonTasks(connection)) // favicon, etc..
-                return false;
 
             if (!templates.valid())
                 return fatalError("Templates not valid",connection);
@@ -698,9 +734,15 @@ namespace RPServer
             // see if we have a session cookie
             foreach (Cookie c in context.Request.Cookies)
             {
+                Console.WriteLine("cookie " + c.Name.ToString() + " " + c.Value.ToString());
                 if (c.Name == "session")
                     session = c.Value;
             }
+
+            bool authed = isAuthedSession(session);
+
+            if (handleCommonTasks(connection,authed)) // favicon, etc..
+                return false;
 
             // if there is no session, 
             if (!isAuthedSession(session))
