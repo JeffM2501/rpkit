@@ -1,4 +1,4 @@
-<p><h2>Please Login</h2></p>
+<p><h2>Please enter your username and email address</h2></p>
 
 <form name ="input" action="./" method="post">
 <input type="hidden" name="action" value="forgotpassword">

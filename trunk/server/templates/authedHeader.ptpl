@@ -1,6 +1,6 @@
-<table class="authHeader">
+<table class="authHeader" width ="100%">
 <tr>
 <td class="[HOME]"><a href="[URL]">Home</a></td>
-<td class="[PROFILE]"><a href="[URL]/?action=?manageUser">Profile</a></td>
+<td class="[PROFILE]"><a href="[URL]?action=manageUser">Profile</a></td>
 </tr>
 </table>
