@@ -1,0 +1,18 @@
+<p><h2>Please fill out the following information</h2></p>
+<form name ="input" action="./" method="post">
+<input type="hidden" name="action" value="newuser">
+<input type="hidden" name="mode" value="adduser">
+
+
+<table border="0">
+<tr><td>Username</td><td><input type="text" name="username"></td></tr>
+<tr><td>Password (6 character min.)</td><td><input type="password" name="password"></td></tr>
+<tr><td>Password (confirm)</td><td><input type="password" name="password2"></td></tr>
+<tr><td>E-mail </td><td><input type="text" name="email"></td></tr>
+<tr><td>E-mail (confirm)</td><td><input type="text" name="email2"></td></tr>
+</table>
+<p>By clicking this box you agree to the <a href="http://www.opencombat.net/rpkit/tos.html" target="new"> Terms of serivce</a> &nbsp; <input type="checkbox" name="agree"></p>
+<input type="submit" value ="submit">
+</form>
+<br>
+
