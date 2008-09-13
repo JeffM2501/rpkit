@@ -134,6 +134,26 @@ namespace RPServer
                 connection.setMimeType("text/plain");
         }
 
+        private void writeAuthHeader(HTTPConnection connection)
+        {
+            string header = templates.get("authedHeader");
+
+            string action = connection.getArg("action");
+
+            if (action == string.Empty)
+                header = header.Replace("[HOME]","authSelect");
+            else
+                header = header.Replace("[HOME]","");
+
+            if (action == "manageUser")
+                header = header.Replace("[PROFILE]", "authSelect");
+            else
+                header = header.Replace("[PROFILE]", "");
+
+
+            connection.writeToContext(header);
+        }
+
         private void writeHTTPFooter(HTTPConnection connection)
         {
             if (templates.httpFooter != null)
@@ -495,11 +515,6 @@ namespace RPServer
             writeHTTPFooter(connection);
         }
 
-        private void generateHomepage(HTTPConnection connection, AuthedSession session )
-        {
-            connection.writeToContext(fillTemplate(templates.get("homepage")));
-        }
-
         private void login( HTTPConnection connection )
         {
             writeHTTPHeader(connection);
@@ -563,9 +578,20 @@ namespace RPServer
             writeHTTPFooter(connection);
         }
 
+        private void generateUserPage(HTTPConnection connection, AuthedSession session)
+        {
+            connection.writeToContext(fillTemplate(templates.get("homepage")));
+        }
+
+        private void generateHomepage(HTTPConnection connection, AuthedSession session)
+        {
+            connection.writeToContext(fillTemplate(templates.get("homepage")));
+        }
+
         private bool handleAuthedQuery( HTTPConnection connection, string sessionID )
         {
             writeHTTPHeader(connection);
+            writeAuthHeader(connection);
 
             AuthedSession session = authedSessions[sessionID];
 
@@ -577,10 +603,10 @@ namespace RPServer
                 writeHTTPFooter(connection);
                 return true;
             }
+            if (action == "manageUser")
+                generateUserPage(connection, session);
             else
-            {
                 generateHomepage(connection, session);
-            }
 
             writeHTTPFooter(connection);
             return false;

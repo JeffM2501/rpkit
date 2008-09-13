@@ -31,3 +31,15 @@ float: none;
 	padding: 5px;
 	text-align: left;
 }
+
+.authHeader
+{
+	background-color: #000055;
+	color: #ffffff;
+}
+
+.authSelect
+{
+	background-color: #000055;
+	color: #ffffff;
+}
