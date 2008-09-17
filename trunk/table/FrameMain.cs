@@ -52,13 +52,19 @@ namespace table
 
             renderer.setClearColor(0, 0, 0);
 
+            this.MouseMove += new MouseEventHandler(mouseMove);
             this.MouseWheel += new MouseEventHandler(mouseWheel);
             initialized = true;
         }
 
-        private void mouseWheel ( object sender, MouseEventArgs e )
+        private void mouseMove(object sender, MouseEventArgs e)
         {
             map.zoom(-e.Delta / 120.0f);
+        }
+
+        private void mouseWheel(object sender, MouseEventArgs e)
+        {
+            map.zoom(-e.Delta / 12000.0f);
         }
 
         public void mainLoop()
