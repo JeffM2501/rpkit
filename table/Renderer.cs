@@ -211,7 +211,8 @@ namespace GLRenderer
             Gl.glViewport(0, 0, width, height);                                 // Reset The Current Viewport
             Gl.glMatrixMode(Gl.GL_PROJECTION);                                  // Select The Projection Matrix
             Gl.glLoadIdentity();                                                // Reset The Projection Matrix
-            Glu.gluPerspective(45, width / (double)height, 0.1, 100);          // Calculate The Aspect Ratio Of The Window
+
+            Gl.glOrtho(0, width, 0, height, 0, 100);
             Gl.glMatrixMode(Gl.GL_MODELVIEW);                                   // Select The Modelview Matrix
             Gl.glLoadIdentity();                                                // Reset The Modelview Matrix
         }
